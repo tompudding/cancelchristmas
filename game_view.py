@@ -175,6 +175,14 @@ class GameView(ui.RootElement):
     def Update(self,t):
         self.t = t
         self.viewpos.Update(t)
+        if self.viewpos.pos.x < 0:
+            self.viewpos.pos.x = 0
+        if self.viewpos.pos.y < 0:
+            self.viewpos.pos.y = 0
+        if self.viewpos.pos.x > (self.map.world_size.x - globals.screen.x):
+            self.viewpos.pos.x = (self.map.world_size.x - globals.screen.x)
+        if self.viewpos.pos.y > (self.map.world_size.y - globals.screen.y):
+            self.viewpos.pos.y = (self.map.world_size.y - globals.screen.y)
         self.map.player.SetPos(self.map.player.GetPos() + self.player_direction)
 
     def KeyDown(self,key):
@@ -184,3 +192,5 @@ class GameView(ui.RootElement):
     def KeyUp(self,key):
         if key in self.direction_amounts:
             self.player_direction -= self.direction_amounts[key]
+        elif key == pygame.K_ESCAPE:
+            raise globals.types.FatalError('quit')
