@@ -98,6 +98,8 @@ class TileTypes:
     TILE        = 5
     PLAYER      = 6
 
+    Impassable = set((WALL,DOOR_CLOSED))
+
 class TileData(object):
     texture_names = {TileTypes.GRASS       : 'grass.png',
                      TileTypes.WALL        : 'wall.png',
@@ -145,7 +147,7 @@ class GameMap(object):
                     try:
                         self.data[x][y] = TileData(self.input_mapping[tile],Point(x,y))
                         if self.input_mapping[tile] == TileTypes.PLAYER:
-                            self.player = actors.Player(Point(x,y))
+                            self.player = actors.Player(self,Point(x,y))
                             self.actors.append(self.player)
                     except KeyError:
                         raise globals.types.FatalError('Invalid map data')
@@ -154,10 +156,11 @@ class GameMap(object):
                     break
 
 class GameView(ui.RootElement):
-    direction_amounts = {pygame.K_LEFT  : Point(-0.06, 0.00),
-                         pygame.K_RIGHT : Point( 0.06, 0.00),
-                         pygame.K_UP    : Point( 0.00, 0.06),
-                         pygame.K_DOWN  : Point( 0.00,-0.06)}
+    speed = 20
+    direction_amounts = {pygame.K_LEFT  : Point(-0.01*speed, 0.00),
+                         pygame.K_RIGHT : Point( 0.01*speed, 0.00),
+                         pygame.K_UP    : Point( 0.00, 0.01*speed),
+                         pygame.K_DOWN  : Point( 0.00,-0.01*speed)}
     def __init__(self):
         self.atlas = globals.atlas = drawing.texture.TextureAtlas('tiles_atlas_0.png','tiles_atlas.txt')
         self.map = GameMap('level1.txt')
@@ -183,7 +186,8 @@ class GameView(ui.RootElement):
             self.viewpos.pos.x = (self.map.world_size.x - globals.screen.x)
         if self.viewpos.pos.y > (self.map.world_size.y - globals.screen.y):
             self.viewpos.pos.y = (self.map.world_size.y - globals.screen.y)
-        self.map.player.SetPos(self.map.player.GetPos() + self.player_direction)
+
+        self.map.player.Move(self.player_direction)
 
     def KeyDown(self,key):
         if key in self.direction_amounts:
