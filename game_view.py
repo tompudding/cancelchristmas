@@ -108,14 +108,15 @@ class TileData(object):
         self.pos  = pos
         self.type = type
         try:
-            self.quad = drawing.Quad(globals.quad_buffer,tc = globals.atlas.TextureSpriteCoords(self.texture_names[type]))
-            bl        = pos * globals.tile_dimensions
-            tr        = bl + globals.tile_dimensions
-            self.quad.SetVertices(bl,tr,0)
+            self.name = self.texture_names[type]
         except KeyError:
-            self.quad = None
-            #It wasn't a tile (so probably a player or an elf)
-            pass
+            self.name = self.texture_names[TileTypes.GRASS]
+
+        self.quad = drawing.Quad(globals.quad_buffer,tc = globals.atlas.TextureSpriteCoords(self.name))
+        bl        = pos * globals.tile_dimensions
+        tr        = bl + globals.tile_dimensions
+        self.quad.SetVertices(bl,tr,0)
+
 
 class GameMap(object):
     input_mapping = {' ' : TileTypes.GRASS,
@@ -143,7 +144,7 @@ class GameMap(object):
                 for x,tile in enumerate(line):
                     try:
                         self.data[x][y] = TileData(self.input_mapping[tile],Point(x,y))
-                        if self.data[x][y].type == TileTypes.PLAYER:
+                        if self.input_mapping[tile] == TileTypes.PLAYER:
                             self.player = actors.Player(Point(x,y))
                             self.actors.append(self.player)
                     except KeyError:
@@ -153,12 +154,17 @@ class GameMap(object):
                     break
 
 class GameView(ui.RootElement):
+    direction_amounts = {pygame.K_LEFT  : Point(-0.06, 0.00),
+                         pygame.K_RIGHT : Point( 0.06, 0.00),
+                         pygame.K_UP    : Point( 0.00, 0.06),
+                         pygame.K_DOWN  : Point( 0.00,-0.06)}
     def __init__(self):
         self.atlas = globals.atlas = drawing.texture.TextureAtlas('tiles_atlas_0.png','tiles_atlas.txt')
         self.map = GameMap('level1.txt')
         self.map.world_size = self.map.size * globals.tile_dimensions
         self.viewpos = Viewpos(Point(0,0))
         self.viewpos.Follow(globals.time,self.map.player,)
+        self.player_direction = Point(0,0)
         super(GameView,self).__init__(Point(0,0),Point(*self.map.world_size))
 
     def Draw(self):
@@ -169,3 +175,12 @@ class GameView(ui.RootElement):
     def Update(self,t):
         self.t = t
         self.viewpos.Update(t)
+        self.map.player.SetPos(self.map.player.GetPos() + self.player_direction)
+
+    def KeyDown(self,key):
+        if key in self.direction_amounts:
+            self.player_direction += self.direction_amounts[key]
+
+    def KeyUp(self,key):
+        if key in self.direction_amounts:
+            self.player_direction -= self.direction_amounts[key]
