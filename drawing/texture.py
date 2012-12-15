@@ -144,6 +144,9 @@ class TextureAtlas(object):
         self.TransformCoords(subimage,full_tc)
         return full_tc
 
+    def TextureSpriteCoords(self,subimage):
+        return self.TextureCoords(os.path.join(globals.dirs.sprites,subimage))
+
 class PetsciiAtlas(TextureAtlas):
     """
     A texture atlas that takes a petscii image as a constructor and infers the subimage locations

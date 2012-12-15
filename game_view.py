@@ -104,10 +104,11 @@ class TileData(object):
                      TileTypes.DOOR_OPEN   : 'door_open.png',
                      TileTypes.TILE        : 'tile.png'}
     def __init__(self,type,pos):
-        self.pos = pos
-        self.quad = drawing.Quad(globals.quad_buffer,globals.atlas.TextureSpriteCoords(self.texture_names[type]))
-        bl = pos * globals.tile_dimensions
-        tr = bl + globals.tile_dimensions
+        self.pos  = pos
+        self.type = type
+        self.quad = drawing.Quad(globals.quad_buffer,tc = globals.atlas.TextureSpriteCoords(self.texture_names[type]))
+        bl        = pos * globals.tile_dimensions
+        tr        = bl + globals.tile_dimensions
         self.quad.SetVertices(bl,tr,0)
 
 class GameMap(object):
@@ -132,7 +133,7 @@ class GameMap(object):
                     line = line[:self.size.x]
                 for col,tile in enumerate(line):
                     try:
-                        self.data[row][col] = self.input_mapping[tile]
+                        self.data[row][col] = TileData(self.input_mapping[tile],Point(row,col))
                     except KeyError:
                         raise globals.types.FatalError('Invalid map data')
                 row += 1
