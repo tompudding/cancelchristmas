@@ -207,6 +207,17 @@ class TextManager(object):
         quad.letter = char
         return quad
 
+    def HasKey(self,key):
+        try:
+            i = self.atlas.Subimage(key)
+        except KeyError:
+            return False
+        return True
+
+    def SetLetterCoords(self,letter,char):
+        letter.SetTextureCoordinates(self.atlas.TextureCoords(char))
+        letter.letter = char
+
     def GetSize(self,text,scale):
         """
         How big would the text be if drawn on a single row in the given size?
