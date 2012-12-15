@@ -4,6 +4,7 @@ import random,numpy,cmath,math,pygame
 import ui,globals,drawing,os,copy
 from globals.types import Point
 import actors
+import terminal
 
 class Viewpos(object):
     follow_threshold = 0
@@ -135,7 +136,38 @@ class Door(TileData):
         self.quad.SetTextureCoordinates(globals.atlas.TextureSpriteCoords(self.texture_names[self.type]))
 
 class Computer(TileData):
-    pass
+    key_repeat_time = 100
+    initial_key_repeat = 500
+    def SetScreen(self,parent,screen):
+        self.parent   = parent
+        self.screen   = screen
+        self.terminal = terminal.Emulator(parent     = screen,
+                                          background = drawing.constants.colours.black,
+                                          foreground = drawing.constants.colours.green)
+        self.current_key = None
+
+    def KeyDown(self,key):
+        if key == pygame.K_ESCAPE:
+            return
+        self.current_key = key
+        self.last_keyrepeat = None
+        self.terminal.AddKey(key)
+
+    def KeyUp(self,key):
+        if key == pygame.K_ESCAPE:
+            self.parent.CloseScreen()
+        if self.current_key:
+            self.current_key = None
+
+    def Update(self,t):
+        if not self.current_key:
+            return
+        if self.last_keyrepeat == None:
+            self.last_keyrepeat = t+self.initial_key_repeat
+            return
+        if t - self.last_keyrepeat > self.key_repeat_time:
+            self.terminal.AddKey(self.current_key)
+            self.last_keyrepeat = t
 
 def TileDataFactory(type,pos):
     if type in TileTypes.Doors:
@@ -212,6 +244,11 @@ class GameView(ui.RootElement):
                                tr     = Point(1.1,1.2),
                                colour = (0,0,0,0.3))
         self.text.Disable()
+        self.computer_screen = ui.UIElement(parent = globals.screen_root,
+                                            pos = Point(0.1,0.1),
+                                            tr = Point(0.9,0.9))
+        self.computer_screen.Disable()
+        self.computer = None
         super(GameView,self).__init__(Point(0,0),Point(*self.map.world_size))
 
     def Draw(self):
@@ -220,6 +257,9 @@ class GameView(ui.RootElement):
         drawing.DrawAll(globals.quad_buffer,self.atlas.texture.texture)
         
     def Update(self,t):
+        if self.computer:
+            return self.computer.Update(t)
+            
         self.t = t
         self.viewpos.Update(t)
         if self.viewpos.pos.x < 0:
@@ -237,11 +277,19 @@ class GameView(ui.RootElement):
         else:
             self.text.Disable()
 
+    def CloseScreen(self):
+        self.computer_screen.Disable()
+        self.computer = None
+
     def KeyDown(self,key):
+        if self.computer:
+            return self.computer.KeyDown(key)
         if key in self.direction_amounts:
             self.player_direction += self.direction_amounts[key]
 
     def KeyUp(self,key):
+        if self.computer:
+            return self.computer.KeyUp(key)
         if key in self.direction_amounts:
             self.player_direction -= self.direction_amounts[key]
         elif key == pygame.K_ESCAPE:
@@ -251,3 +299,10 @@ class GameView(ui.RootElement):
             for door in self.map.doors:
                 door.Toggle()
             
+        elif key == pygame.K_SPACE:
+            computer = self.map.player.AdjacentComputer()
+            if computer:
+                self.text.Disable()
+                self.computer_screen.Enable()
+                computer.SetScreen(self,self.computer_screen)
+                self.computer = computer

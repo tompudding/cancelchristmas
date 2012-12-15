@@ -57,6 +57,7 @@ class Player(Actor):
         current_tiles = set((self.pos + corner).to_int() for corner in self.corners)
         adjacent_tiles = set()
         for tile in current_tiles:
+            #Only look in the tile above, lets restrict ourselves to only having computers pointing down
             for adjacent in (Point(0,1),):
                 target = tile + adjacent
                 try:
