@@ -28,6 +28,7 @@ class Emulator(ui.UIElement):
             self.quads.append(col)
         self.cursor_flash = None
         self.cursor_flash_state = False
+        self.current_buffer = []
             
         self.cursor = Point(0,0)
 
@@ -70,10 +71,14 @@ class Emulator(ui.UIElement):
         #Handle special keys
         self.FlashOff()
         if key == pygame.K_RETURN:
+            print ''.join(self.current_buffer)
             #Move to the start of the next line
             for i in xrange(self.size.x - self.cursor.x):
                 self.AddKey(ord(' '))
+            self.current_buffer = []
         elif key == pygame.K_BACKSPACE:
+            if len(self.current_buffer) > 0:
+                self.current_buffer.pop()
             if self.cursor.x == 0:
                 if self.cursor.y == 0:
                     return
@@ -103,4 +108,4 @@ class Emulator(ui.UIElement):
                 for y in xrange(self.size.y):
                     globals.text_manager.SetLetterCoords(self.quads[x][y],self.quads[x][y+1].letter if y+1 < self.size.y else ' ')
             self.cursor.y = self.size.y - 1
-        print 'addkey',key,self.cursor
+        self.current_buffer.append(key)
