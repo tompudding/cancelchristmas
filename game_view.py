@@ -136,8 +136,8 @@ class Door(TileData):
         self.quad.SetTextureCoordinates(globals.atlas.TextureSpriteCoords(self.texture_names[self.type]))
 
 class Computer(TileData):
-    key_repeat_time = 100
-    initial_key_repeat = 500
+    key_repeat_time = 40
+    initial_key_repeat = 300
 
     def __init__(self,type,pos):
         super(Computer,self).__init__(type,pos)

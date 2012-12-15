@@ -77,8 +77,10 @@ class Emulator(ui.UIElement):
                 self.AddKey(ord(' '))
             self.current_buffer = []
         elif key == pygame.K_BACKSPACE:
-            if len(self.current_buffer) > 0:
-                self.current_buffer.pop()
+            if len(self.current_buffer) == 0:
+                #ignore the backspace
+                return
+            self.current_buffer.pop()
             if self.cursor.x == 0:
                 if self.cursor.y == 0:
                     return
@@ -88,6 +90,7 @@ class Emulator(ui.UIElement):
                 self.cursor.x -= 1
             c = Point(self.cursor.x,self.cursor.y)
             self.AddKey(ord(' '))
+            self.current_buffer.pop() #remove the space we just added
             self.cursor = c
             return
         try:
