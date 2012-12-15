@@ -1,0 +1,6 @@
+resource/sprites/door_closed.png:resource/tiles_atlas_0.png:0:112.0:16:16
+resource/sprites/tile.png:resource/tiles_atlas_0.png:16:112.0:16:16
+resource/sprites/door_open.png:resource/tiles_atlas_0.png:32:112.0:16:16
+resource/sprites/grass.png:resource/tiles_atlas_0.png:48:112.0:16:16
+resource/sprites/wall.png:resource/tiles_atlas_0.png:64:112.0:16:16
+resource/sprites/hacker_front.png:resource/tiles_atlas_0.png:80:112.0:16:16
