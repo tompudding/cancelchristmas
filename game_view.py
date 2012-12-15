@@ -149,8 +149,8 @@ class Computer(TileData):
             self.terminal = terminal.Emulator(parent     = screen,
                                               background = drawing.constants.colours.black,
                                               foreground = drawing.constants.colours.green)
-        else:
-            self.terminal.Enable()
+        #else:
+        #    self.terminal.Enable()
         self.current_key = None
 
     def KeyDown(self,key):
@@ -162,7 +162,7 @@ class Computer(TileData):
 
     def KeyUp(self,key):
         if key == pygame.K_ESCAPE:
-            self.terminal.Disable()
+            #self.terminal.Disable()
             self.parent.CloseScreen()
         if self.current_key:
             self.current_key = None
@@ -253,9 +253,10 @@ class GameView(ui.RootElement):
                                tr     = Point(1.1,1.2),
                                colour = (0,0,0,0.3))
         self.text.Disable()
-        self.computer_screen = ui.UIElement(parent = globals.screen_root,
-                                            pos = Point(0.1,0.1),
-                                            tr = Point(0.9,0.9))
+        self.computer_screen = ui.Box(parent = globals.screen_root,
+                                      pos = Point(50,50).to_float()/globals.screen,
+                                      tr = Point(1,1) - (Point(50,50).to_float()/globals.screen),
+                                      colour = drawing.constants.colours.black)
         self.computer_screen.Disable()
         self.computer = None
         super(GameView,self).__init__(Point(0,0),Point(*self.map.world_size))

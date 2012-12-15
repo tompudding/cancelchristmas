@@ -8,14 +8,12 @@ class Emulator(ui.UIElement):
     cursor_char     = chr(0x9f)
     cursor_interval = 500
     def __init__(self,parent,background,foreground):
-        super(Emulator,self).__init__(parent,Point(0,0),Point(1,1))
+        bl = Point(50,50).to_float()/parent.absolute.size
+        tr = (Point(1,1) - bl)
+        super(Emulator,self).__init__(parent,bl,tr)
         self.background_colour = background
-        self.background = ui.Box(parent = self,
-                                 pos    = Point(0,0),
-                                 tr     = Point(1,1),
-                                 colour = self.background_colour)
         self.scale = 3
-        self.size = (parent.absolute.size/(globals.text_manager.GetSize(' ',self.scale).to_float())).to_int()
+        self.size = (self.absolute.size/(globals.text_manager.GetSize(' ',self.scale).to_float())).to_int()
         self.quads = []
         for x in xrange(self.size.x):
             col = []
@@ -23,7 +21,7 @@ class Emulator(ui.UIElement):
                 q = globals.text_manager.Letter(' ',drawing.texture.TextTypes.SCREEN_RELATIVE)
                 bl = (Point(x,self.size.y - 1 - y).to_float())/self.size
                 tr = (Point(x+1,self.size.y - y).to_float())/self.size
-                q.SetVertices(self.GetAbsolute(bl),self.GetAbsolute(tr),drawing.constants.DrawLevels.ui + self.background.level + 1)
+                q.SetVertices(self.GetAbsolute(bl),self.GetAbsolute(tr),drawing.constants.DrawLevels.ui + self.level + 1)
                 col.append(q)
             self.quads.append(col)
         self.cursor_flash = None
