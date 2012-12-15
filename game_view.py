@@ -96,6 +96,7 @@ class TileTypes:
     DOOR_CLOSED = 3
     DOOR_OPEN   = 4
     TILE        = 5
+    PLAYER      = 6
 
 class TileData(object):
     texture_names = {TileTypes.GRASS       : 'grass.png',
@@ -106,10 +107,15 @@ class TileData(object):
     def __init__(self,type,pos):
         self.pos  = pos
         self.type = type
-        self.quad = drawing.Quad(globals.quad_buffer,tc = globals.atlas.TextureSpriteCoords(self.texture_names[type]))
-        bl        = pos * globals.tile_dimensions
-        tr        = bl + globals.tile_dimensions
-        self.quad.SetVertices(bl,tr,0)
+        try:
+            self.quad = drawing.Quad(globals.quad_buffer,tc = globals.atlas.TextureSpriteCoords(self.texture_names[type]))
+            bl        = pos * globals.tile_dimensions
+            tr        = bl + globals.tile_dimensions
+            self.quad.SetVertices(bl,tr,0)
+        except KeyError:
+            self.quad = None
+            #It wasn't a tile (so probably a player or an elf)
+            pass
 
 class GameMap(object):
     input_mapping = {' ' : TileTypes.GRASS,
@@ -118,7 +124,8 @@ class GameMap(object):
                      '-' : TileTypes.WALL,
                      '+' : TileTypes.WALL,
                      'd' : TileTypes.DOOR_CLOSED,
-                     'o' : TileTypes.DOOR_OPEN}
+                     'o' : TileTypes.DOOR_OPEN,
+                     'p' : TileTypes.PLAYER}
     def __init__(self,name):
         self.size = Point(80,80)
         self.data = [[TileTypes.GRASS for i in xrange(self.size.y)] for j in xrange(self.size.x)]
