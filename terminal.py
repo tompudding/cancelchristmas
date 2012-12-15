@@ -27,6 +27,18 @@ class Emulator(ui.UIElement):
             
         self.cursor = Point(0,0)
 
+    def Disable(self):
+        super(Emulator,self).Disable()
+        for x in xrange(self.size.x):
+            for y in xrange(self.size.y):
+                self.quads[x][y].Disable()
+
+    def Enable(self):
+        super(Emulator,self).Enable()
+        for x in xrange(self.size.y):
+            for y in xrange(self.size.y):
+                self.quads[x][y].Enable()
+
     def AddKey(self,key):
         #Handle special keys
         if key == pygame.K_RETURN:

@@ -138,12 +138,19 @@ class Door(TileData):
 class Computer(TileData):
     key_repeat_time = 100
     initial_key_repeat = 500
+
+    def __init__(self,type,pos):
+        super(Computer,self).__init__(type,pos)
+        self.terminal = None
     def SetScreen(self,parent,screen):
         self.parent   = parent
         self.screen   = screen
-        self.terminal = terminal.Emulator(parent     = screen,
-                                          background = drawing.constants.colours.black,
-                                          foreground = drawing.constants.colours.green)
+        if self.terminal == None:
+            self.terminal = terminal.Emulator(parent     = screen,
+                                              background = drawing.constants.colours.black,
+                                              foreground = drawing.constants.colours.green)
+        else:
+            self.terminal.Enable()
         self.current_key = None
 
     def KeyDown(self,key):
@@ -155,6 +162,7 @@ class Computer(TileData):
 
     def KeyUp(self,key):
         if key == pygame.K_ESCAPE:
+            self.terminal.Disable()
             self.parent.CloseScreen()
         if self.current_key:
             self.current_key = None
