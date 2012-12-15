@@ -6,7 +6,7 @@ from globals.types import Point
 
 class Emulator(ui.UIElement):
     cursor_char     = chr(0x9f)
-    cursor_interval = 800
+    cursor_interval = 500
     def __init__(self,parent,background,foreground):
         super(Emulator,self).__init__(parent,Point(0,0),Point(1,1))
         self.background_colour = background
@@ -28,7 +28,6 @@ class Emulator(ui.UIElement):
             self.quads.append(col)
         self.cursor_flash = None
         self.cursor_flash_state = False
-        self.cursor_char = None
             
         self.cursor = Point(0,0)
 
@@ -40,12 +39,9 @@ class Emulator(ui.UIElement):
             self.cursor_flash = t
             if not self.cursor_flash_state:
                 #Turn the cursor on
-                old_letter = self.quads[self.cursor.x][self.cursor.y].letter
-                globals.text_manager.SetLetterCoords(self.quads[self.cursor.x][self.cursor.y],self.cursor_char)
-                self.quads[self.cursor.x][self.cursor.y].letter = old_letter
+                self.FlashOn()
             else:
-                l = self.quads[self.cursor.x][self.cursor.y]
-                globals.text_manager.SetLetterCoords(l,l.letter)
+                self.FlashOff()
 
     def FlashOn(self):
         old_letter = self.quads[self.cursor.x][self.cursor.y].letter
