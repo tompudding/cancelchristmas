@@ -145,6 +145,20 @@ class Emulator(ui.UIElement):
         if key == pygame.K_RIGHT:
             if self.cursor.x < self.size.x - 1:
                 self.cursor.x += 1
+        if key == pygame.K_DOWN:
+            if self.cursor.y < self.size.y - 1:
+                self.cursor.y += 1
+            else:
+                #ooh, need to move the screen up...
+                self.viewpos += 1
+                self.SetViewBuffer()
+        if key == pygame.K_UP:
+            if self.cursor.y > 0:
+                self.cursor.y -= 1
+            else:
+                if self.viewpos > 1:
+                    self.viewpos -= 1
+                    self.SetViewBuffer()
         self.cursor_flash = self.t
         self.FlashOn()
 
