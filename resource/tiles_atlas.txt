@@ -1,8 +1,9 @@
 resource/fonts/petscii.png:resource/tiles_atlas_0.png:0:64.0:128:64
 resource/sprites/door_closed.png:resource/tiles_atlas_0.png:0:48.0:16:16
-resource/sprites/door_open.png:resource/tiles_atlas_0.png:16:48.0:16:16
-resource/sprites/grass.png:resource/tiles_atlas_0.png:32:48.0:16:16
-resource/sprites/wall_computer.png:resource/tiles_atlas_0.png:48:48.0:16:16
-resource/sprites/wall.png:resource/tiles_atlas_0.png:64:48.0:16:16
-resource/sprites/tile.png:resource/tiles_atlas_0.png:80:48.0:16:16
-resource/sprites/hacker_front.png:resource/tiles_atlas_0.png:96:51.0:9:13
+resource/sprites/switch.png:resource/tiles_atlas_0.png:16:48.0:16:16
+resource/sprites/door_open.png:resource/tiles_atlas_0.png:32:48.0:16:16
+resource/sprites/grass.png:resource/tiles_atlas_0.png:48:48.0:16:16
+resource/sprites/wall_computer.png:resource/tiles_atlas_0.png:64:48.0:16:16
+resource/sprites/wall.png:resource/tiles_atlas_0.png:80:48.0:16:16
+resource/sprites/tile.png:resource/tiles_atlas_0.png:96:48.0:16:16
+resource/sprites/hacker_front.png:resource/tiles_atlas_0.png:112:51.0:9:13

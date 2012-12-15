@@ -23,7 +23,7 @@ class Emulator(ui.UIElement):
         self.computer = computer
         # find my door
         doors = [door for door in self.gameview.map.doors]
-        doors.sort(lambda x,y:cmp((x - self.computer.pos).SquareLength()))
+        doors.sort(lambda x,y:cmp((x.pos - self.computer.pos).SquareLength(),(y.pos - self.computer.pos).SquareLength()))
         self.door = doors[0]
         
         self.size = (self.absolute.size/(globals.text_manager.GetSize(' ',self.scale).to_float())).to_int()

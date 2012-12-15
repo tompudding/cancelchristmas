@@ -92,25 +92,34 @@ class Viewpos(object):
                 self.pos = (self.start_point + (self.target_change*partial)).to_int()
 
 class TileTypes:
-    GRASS       = 1
-    WALL        = 2
-    DOOR_CLOSED = 3
-    DOOR_OPEN   = 4
-    TILE        = 5
-    PLAYER      = 6
-    WALL_ENTRY_COMPUTER = 7
+    GRASS             = 1
+    WALL              = 2
+    DOOR_CLOSED       = 3
+    DOOR_OPEN         = 4
+    TILE              = 5
+    PLAYER            = 6
+    PIN_ENTRY         = 7
+    SWITCH            = 8
+    DISGUISED_PIN     = 9
+    OVERFLOW_INTO_PIN = 10
+    SQL_INJECTION     = 11
+    INTEGER_OVERFLOW  = 12
+    FINAL_CHALLENGE   = 13
+    KEYWORD           = 14
 
-    Impassable = set((WALL,DOOR_CLOSED,WALL_ENTRY_COMPUTER))
     Doors      = set((DOOR_CLOSED,DOOR_OPEN))
-    Computers  = set((WALL_ENTRY_COMPUTER,))
+    Computers  = set((PIN_ENTRY,DISGUISED_PIN,OVERFLOW_INTO_PIN,SQL_INJECTION,INTEGER_OVERFLOW,FINAL_CHALLENGE,KEYWORD))
+    Impassable = set((WALL,DOOR_CLOSED,SWITCH)) | Computers
 
 class TileData(object):
     texture_names = {TileTypes.GRASS         : 'grass.png',
                      TileTypes.WALL          : 'wall.png',
                      TileTypes.DOOR_CLOSED   : 'door_closed.png',
                      TileTypes.DOOR_OPEN     : 'door_open.png',
-                     TileTypes.WALL_ENTRY_COMPUTER : 'wall_computer.png',
-                     TileTypes.TILE          : 'tile.png'}
+                     TileTypes.TILE          : 'tile.png',
+                     TileTypes.SWITCH        : 'switch.png'}
+    for t in TileTypes.Computers:
+        texture_names[t] = 'wall_computer.png'
     def __init__(self,type,pos):
         self.pos  = pos
         self.type = type
@@ -134,6 +143,17 @@ class Door(TileData):
         else:
             self.type = TileTypes.DOOR_CLOSED
         self.quad.SetTextureCoordinates(globals.atlas.TextureSpriteCoords(self.texture_names[self.type]))
+
+class Switch(TileData):
+    def __init__(self,map,type,pos):
+        super(Switch,self).__init__(type,pos)
+        self.map = map
+        doors = [door for door in self.map.doors]
+        doors.sort(lambda x,y:cmp((x.pos - self.pos).SquareLength(),(y.pos - self.pos).SquareLength()))
+        self.door = doors[0]
+
+    def Toggle(self):
+        self.door.Toggle()
 
 class Computer(TileData):
     key_repeat_time = 40
@@ -187,11 +207,13 @@ class Computer(TileData):
             self.terminal.AddKey(self.current_key)
             self.last_keyrepeat = t
 
-def TileDataFactory(type,pos):
+def TileDataFactory(map,type,pos):
     if type in TileTypes.Doors:
         return Door(type,pos)
     elif type in TileTypes.Computers:
         return Computer(type,pos,terminal.GrotoEntryTerminal)
+    elif type == TileTypes.SWITCH:
+        return Switch(map,type,pos)
     else:
         return TileData(type,pos)
 
@@ -201,16 +223,24 @@ class GameMap(object):
                      '|' : TileTypes.WALL,
                      '-' : TileTypes.WALL,
                      '+' : TileTypes.WALL,
-                     'c' : TileTypes.WALL_ENTRY_COMPUTER,
+                     'c' : TileTypes.PIN_ENTRY,
+                     's' : TileTypes.SWITCH,
+                     '1' : TileTypes.DISGUISED_PIN,
+                     '2' : TileTypes.OVERFLOW_INTO_PIN,
+                     '3' : TileTypes.SQL_INJECTION,
+                     '4' : TileTypes.INTEGER_OVERFLOW,
+                     '5' : TileTypes.FINAL_CHALLENGE,
                      'd' : TileTypes.DOOR_CLOSED,
                      'o' : TileTypes.DOOR_OPEN,
+                     'k' : TileTypes.KEYWORD,
                      'p' : TileTypes.PLAYER}
     def __init__(self,name):
-        self.size   = Point(80,80)
+        self.size   = Point(35,35)
         self.data   = [[TileTypes.GRASS for i in xrange(self.size.y)] for j in xrange(self.size.x)]
         self.actors = []
         self.doors  = []
         self.computers = []
+        self.switches = []
         self.player = None
         y = self.size.y - 1
         with open(os.path.join(globals.dirs.maps,name)) as f:
@@ -222,8 +252,9 @@ class GameMap(object):
                 if len(line) > self.size.x:
                     line = line[:self.size.x]
                 for x,tile in enumerate(line):
-                    try:
-                        td = TileDataFactory(self.input_mapping[tile],Point(x,y))
+                    #try:
+                    if 1:
+                        td = TileDataFactory(self,self.input_mapping[tile],Point(x,y))
                         self.data[x][y] = td
                         if self.input_mapping[tile] == TileTypes.PLAYER:
                             self.player = actors.Player(self,Point(x,y))
@@ -232,8 +263,10 @@ class GameMap(object):
                             self.doors.append(td)
                         elif isinstance(td,Computer):
                             self.computers.append(td)
-                    except KeyError:
-                        raise globals.types.FatalError('Invalid map data')
+                        elif isinstance(td,Switch):
+                            self.switches.append(td)
+                    #except KeyError:
+                    #    raise globals.types.FatalError('Invalid map data')
                 y -= 1
                 if y < 0:
                     break
@@ -257,11 +290,18 @@ class GameView(ui.RootElement):
                                text = 'Press space to computer',
                                scale = 2,
                                colour = drawing.constants.colours.white)
-        self.text.box = ui.Box(parent = self.text,
+        self.switch_text = ui.TextBox(globals.screen_root,
+                               bl = Point(0.15,0.15),
+                               tr = None,
+                               text = 'Press space to activate switch',
+                               scale = 2,
+                               colour = drawing.constants.colours.white)
+        self.text.box = ui.Box(parent = self.switch_text,
                                pos    = Point(-0.1,-0.2),
                                tr     = Point(1.1,1.2),
                                colour = (0,0,0,0.3))
         self.text.Disable()
+        self.switch_text.Disable()
         self.computer_screen = ui.Box(parent = globals.screen_root,
                                       pos = Point(0,0.45) + (Point(25,25).to_float()/globals.screen),
                                       tr = Point(1,1) - (Point(25,25).to_float()/globals.screen),
@@ -296,6 +336,11 @@ class GameView(ui.RootElement):
         else:
             self.text.Disable()
 
+        if self.map.player.AdjacentSwitch():
+            self.switch_text.Enable()
+        else:
+            self.switch_text.Disable()
+
     def CloseScreen(self):
         self.computer_screen.Disable()
         self.computer = None
@@ -325,3 +370,6 @@ class GameView(ui.RootElement):
                 self.computer_screen.Enable()
                 computer.SetScreen(self,self.computer_screen)
                 self.computer = computer
+            switch = self.map.player.AdjacentSwitch()
+            if switch:
+                switch.Toggle()

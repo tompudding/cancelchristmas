@@ -53,7 +53,7 @@ class Actor(object):
         return self.pos
 
 class Player(Actor):
-    def AdjacentComputer(self):
+    def AdjacentItem(self,item_type):
         current_tiles = set((self.pos + corner).to_int() for corner in self.corners)
         adjacent_tiles = set()
         for tile in current_tiles:
@@ -64,5 +64,11 @@ class Player(Actor):
                     tile_data = self.map.data[target.x][target.y]
                 except IndexError:
                     continue
-                if isinstance(tile_data,game_view.Computer):
+                if isinstance(tile_data,item_type):
                     return tile_data
+
+    def AdjacentComputer(self):
+        return self.AdjacentItem(game_view.Computer)
+
+    def AdjacentSwitch(self):
+        return self.AdjacentItem(game_view.Switch)
