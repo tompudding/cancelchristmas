@@ -5,6 +5,8 @@ import ui,globals,drawing,os,copy
 from globals.types import Point
 
 class Emulator(ui.UIElement):
+    cursor_char     = chr(0x9f)
+    cursor_interval = 800
     def __init__(self,parent,background,foreground):
         super(Emulator,self).__init__(parent,Point(0,0),Point(1,1))
         self.background_colour = background
@@ -24,8 +26,37 @@ class Emulator(ui.UIElement):
                 q.SetVertices(self.GetAbsolute(bl),self.GetAbsolute(tr),drawing.constants.DrawLevels.ui + self.background.level + 1)
                 col.append(q)
             self.quads.append(col)
+        self.cursor_flash = None
+        self.cursor_flash_state = False
+        self.cursor_char = None
             
         self.cursor = Point(0,0)
+
+    def Update(self,t):
+        if self.cursor_flash == None:
+            self.cursor_flash = t
+            return
+        if t - self.cursor_flash > self.cursor_interval:
+            self.cursor_flash = t
+            if not self.cursor_flash_state:
+                #Turn the cursor on
+                old_letter = self.quads[self.cursor.x][self.cursor.y].letter
+                globals.text_manager.SetLetterCoords(self.quads[self.cursor.x][self.cursor.y],self.cursor_char)
+                self.quads[self.cursor.x][self.cursor.y].letter = old_letter
+            else:
+                l = self.quads[self.cursor.x][self.cursor.y]
+                globals.text_manager.SetLetterCoords(l,l.letter)
+
+    def FlashOn(self):
+        old_letter = self.quads[self.cursor.x][self.cursor.y].letter
+        globals.text_manager.SetLetterCoords(self.quads[self.cursor.x][self.cursor.y],self.cursor_char)
+        self.quads[self.cursor.x][self.cursor.y].letter = old_letter
+        self.cursor_flash_state = True
+
+    def FlashOff(self):
+        l = self.quads[self.cursor.x][self.cursor.y]
+        globals.text_manager.SetLetterCoords(l,l.letter)
+        self.cursor_flash_state = False
 
     def Disable(self):
         super(Emulator,self).Disable()
@@ -41,6 +72,7 @@ class Emulator(ui.UIElement):
 
     def AddKey(self,key):
         #Handle special keys
+        self.FlashOff()
         if key == pygame.K_RETURN:
             #Move to the start of the next line
             for i in xrange(self.size.x - self.cursor.x):

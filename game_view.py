@@ -168,6 +168,7 @@ class Computer(TileData):
             self.current_key = None
 
     def Update(self,t):
+        self.terminal.Update(t)
         if not self.current_key:
             return
         if self.last_keyrepeat == None:
