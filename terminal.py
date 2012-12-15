@@ -12,13 +12,20 @@ class Modes:
 class Emulator(ui.UIElement):
     cursor_char     = chr(0x9f)
     cursor_interval = 500
-    def __init__(self,parent,background,foreground):
+    def __init__(self,parent,gameview,computer,background,foreground):
         bl = Point(50,50).to_float()/parent.absolute.size
         tr = (Point(1,1) - bl)
         super(Emulator,self).__init__(parent,bl,tr)
         self.background_colour = background
         self.foreground_colour = foreground
         self.scale = 2
+        self.gameview = gameview
+        self.computer = computer
+        # find my door
+        doors = [door for door in self.gameview.map.doors]
+        doors.sort(lambda x,y:cmp((x - self.computer.pos).SquareLength()))
+        self.door = doors[0]
+        
         self.size = (self.absolute.size/(globals.text_manager.GetSize(' ',self.scale).to_float())).to_int()
         self.quads = []
         self.mode  = Modes.ENTRY
@@ -41,6 +48,17 @@ class Emulator(ui.UIElement):
         self.cursor_view  = Point(0,0)
         self.cursor = self.cursor_entry
         self.saved_buffer = []
+
+        self.text = ui.TextBox(self,
+                               bl = Point(0.22,-0.14),
+                               tr = None,
+                               text = 'Press TAB to switch to code view',
+                               scale = 2,
+                               colour = drawing.constants.colours.green)
+        #self.text_box = ui.Box(parent = self,
+        #                       pos    = Point(0.2,0.9),
+        #                       tr     = Point(1.1,1.2),
+        #                       colour = (0,0,0,0.3))
         
         self.AddMessage(self.GetBanner())
 
@@ -73,12 +91,14 @@ class Emulator(ui.UIElement):
 
     def Disable(self):
         super(Emulator,self).Disable()
+        self.text.Disable()
         for x in xrange(self.size.x):
             for y in xrange(self.size.y):
                 self.quads[x][y].Disable()
 
     def Enable(self):
         super(Emulator,self).Enable()
+        self.text.Enable()
         for x in xrange(self.size.x):
             for y in xrange(self.size.y):
                 self.quads[x][y].Enable()
@@ -96,14 +116,14 @@ class Emulator(ui.UIElement):
 
     def ToggleMode(self):
         if self.mode == Modes.ENTRY:
-            print 'switch to view mode'
+            self.text.SetText('Press TAB to swtich to console mode',colour = drawing.constants.colours.green)
             self.mode = Modes.VIEW
             #Save off the current entry buffer for restoring
             self.SaveEntryBuffer()
             self.cursor = self.cursor_view
             self.SetViewBuffer()
         else:
-            print 'swtich to entry mode'
+            self.text.SetText('Press TAB to swtich to code mode',colour = drawing.constants.colours.green)
             self.mode = Modes.ENTRY
             self.cursor = self.cursor_entry
             self.RestoreEntryBuffer()
@@ -233,14 +253,15 @@ while True:
            fail    = fail_message,
            pin     = '{pin}')
 
-    def __init__(self,parent,background,foreground):
+    def __init__(self,*args,**kwargs):
         self.pin = ''.join(random.choice(string.digits) for i in xrange(4))
-        super(GrotoEntryTerminal,self).__init__(parent,background,foreground)
+        super(GrotoEntryTerminal,self).__init__(*args,**kwargs)
 
     def Dispatch(self,command):
         if command == self.pin:
             self.AddMessage(self.success_message)
             #open the door
+            self.door.Toggle()
         else:
             self.AddMessage(self.fail_message)
 

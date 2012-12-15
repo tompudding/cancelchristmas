@@ -377,7 +377,7 @@ class Box(UIElement):
         super(Box,self).UpdatePosition()
         self.quad.SetVertices(self.absolute.bottom_left,
                               self.absolute.top_right,
-                              drawing.constants.ui_level)
+                              drawing.constants.DrawLevels.ui)
 
     def Delete(self):
         super(Box,self).Delete()

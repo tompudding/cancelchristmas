@@ -98,18 +98,18 @@ class TileTypes:
     DOOR_OPEN   = 4
     TILE        = 5
     PLAYER      = 6
-    WALL_COMPUTER = 7
+    WALL_ENTRY_COMPUTER = 7
 
-    Impassable = set((WALL,DOOR_CLOSED,WALL_COMPUTER))
+    Impassable = set((WALL,DOOR_CLOSED,WALL_ENTRY_COMPUTER))
     Doors      = set((DOOR_CLOSED,DOOR_OPEN))
-    Computers  = set((WALL_COMPUTER,))
+    Computers  = set((WALL_ENTRY_COMPUTER,))
 
 class TileData(object):
     texture_names = {TileTypes.GRASS         : 'grass.png',
                      TileTypes.WALL          : 'wall.png',
                      TileTypes.DOOR_CLOSED   : 'door_closed.png',
                      TileTypes.DOOR_OPEN     : 'door_open.png',
-                     TileTypes.WALL_COMPUTER : 'wall_computer.png',
+                     TileTypes.WALL_ENTRY_COMPUTER : 'wall_computer.png',
                      TileTypes.TILE          : 'tile.png'}
     def __init__(self,type,pos):
         self.pos  = pos
@@ -139,16 +139,19 @@ class Computer(TileData):
     key_repeat_time = 40
     initial_key_repeat = 300
 
-    def __init__(self,type,pos):
+    def __init__(self,type,pos,terminal_type):
         super(Computer,self).__init__(type,pos)
         self.terminal = None
+        self.terminal_type = terminal_type
     def SetScreen(self,parent,screen):
         self.parent   = parent
         self.screen   = screen
         if self.terminal == None:
-            self.terminal = terminal.GrotoEntryTerminal(parent     = screen,
-                                                        background = drawing.constants.colours.black,
-                                                        foreground = drawing.constants.colours.green)
+            self.terminal = self.terminal_type(parent     = screen,
+                                               gameview   = self.parent,
+                                               computer   = self,
+                                               background = drawing.constants.colours.black,
+                                               foreground = drawing.constants.colours.green)
         #else:
         #    self.terminal.Enable()
         self.current_key = None
@@ -188,7 +191,7 @@ def TileDataFactory(type,pos):
     if type in TileTypes.Doors:
         return Door(type,pos)
     elif type in TileTypes.Computers:
-        return Computer(type,pos)
+        return Computer(type,pos,terminal.GrotoEntryTerminal)
     else:
         return TileData(type,pos)
 
@@ -198,7 +201,7 @@ class GameMap(object):
                      '|' : TileTypes.WALL,
                      '-' : TileTypes.WALL,
                      '+' : TileTypes.WALL,
-                     'c' : TileTypes.WALL_COMPUTER,
+                     'c' : TileTypes.WALL_ENTRY_COMPUTER,
                      'd' : TileTypes.DOOR_CLOSED,
                      'o' : TileTypes.DOOR_OPEN,
                      'p' : TileTypes.PLAYER}
@@ -236,7 +239,7 @@ class GameMap(object):
                     break
 
 class GameView(ui.RootElement):
-    speed = 20
+    speed = 6
     direction_amounts = {pygame.K_LEFT  : Point(-0.01*speed, 0.00),
                          pygame.K_RIGHT : Point( 0.01*speed, 0.00),
                          pygame.K_UP    : Point( 0.00, 0.01*speed),
