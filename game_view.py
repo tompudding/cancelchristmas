@@ -212,11 +212,21 @@ class Computer(TileData):
             self.terminal.AddKey(self.current_key)
             self.last_keyrepeat = t
 
+terminals = {TileTypes.PIN_ENTRY         : terminal.GrotoEntryTerminal,
+             TileTypes.DISGUISED_PIN     : terminal.DisguisedPinTerminal,
+             TileTypes.OVERFLOW_INTO_PIN : terminal.DisguisedPinTerminal,
+             TileTypes.SQL_INJECTION     : terminal.DisguisedPinTerminal,
+             TileTypes.INTEGER_OVERFLOW  : terminal.DisguisedPinTerminal,
+             TileTypes.FINAL_CHALLENGE   : terminal.DisguisedPinTerminal,
+             TileTypes.KEYWORD           : terminal.KeywordTerminal}
+
+
 def TileDataFactory(map,type,pos):
     if type in TileTypes.Doors:
         return Door(type,pos)
     elif type in TileTypes.Computers:
-        return Computer(type,pos,terminal.GrotoEntryTerminal)
+        terminal = terminals[type]
+        return Computer(type,pos,terminals[type])
     elif type == TileTypes.SWITCH:
         return Switch(map,type,pos)
     else:

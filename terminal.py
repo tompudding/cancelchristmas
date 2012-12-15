@@ -9,6 +9,10 @@ class Modes:
     ENTRY = 1
     VIEW  = 2
 
+globals.final_password = ''.join(random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in xrange(5))
+globals.password_positions = range(5)
+random.shuffle(globals.password_positions)
+
 class Emulator(ui.UIElement):
     cursor_char     = chr(0x9f)
     cursor_interval = 500
@@ -268,3 +272,35 @@ while True:
     def GetCode(self):
         return self.code.format(pin = self.pin)
             
+class DisguisedPinTerminal(GrotoEntryTerminal):
+    code = """
+terminal.write("{banner}")
+while True:
+    pin = terminal.GetLine()
+    if ((pin*77)+1435)%385680 == '{pin}':
+        terminal.write("{success}")
+        door.open()
+    else:
+        terminal.write("{fail}")
+""".format(banner  = GrotoEntryTerminal.Banner,
+           success = GrotoEntryTerminal.success_message,
+           fail    = GrotoEntryTerminal.fail_message,
+           pin     = '{pin}')
+
+    def GetCode(self):
+        return self.code.format(pin = ('%d' % (((int(self.pin)*77)+1435)%385680)))
+
+positionals = ['st','nd','rd','th','th']
+
+class KeywordTerminal(Emulator):
+    Banner_format = 'The {position} letter of the final password is {letter}'
+    code = ''
+    def __init__(self,*args,**kwargs):
+        self.position = globals.password_positions.pop()
+        self.letter = globals.final_password[self.position]
+        self.Banner = self.Banner_format.format(position = '%d%s' % (self.position+1,positionals[self.position]),
+                                                letter   = self.letter)
+        super(KeywordTerminal,self).__init__(*args,**kwargs)
+
+    def GetCode(self):
+        return ''
