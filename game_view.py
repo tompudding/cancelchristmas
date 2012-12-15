@@ -99,6 +99,7 @@ class TileTypes:
     PLAYER      = 6
 
     Impassable = set((WALL,DOOR_CLOSED))
+    Doors      = set((DOOR_CLOSED,DOOR_OPEN))
 
 class TileData(object):
     texture_names = {TileTypes.GRASS       : 'grass.png',
@@ -119,6 +120,22 @@ class TileData(object):
         tr        = bl + globals.tile_dimensions
         self.quad.SetVertices(bl,tr,0)
 
+class Door(TileData):
+    def __init__(self,type,pos):
+        super(Door,self).__init__(type,pos)
+        
+    def Toggle(self):
+        if self.type == TileTypes.DOOR_CLOSED:
+            self.type = TileTypes.DOOR_OPEN
+        else:
+            self.type = TileTypes.DOOR_CLOSED
+        self.quad.SetTextureCoordinates(globals.atlas.TextureSpriteCoords(self.texture_names[self.type]))
+
+def TileDataFactory(type,pos):
+    if type in TileTypes.Doors:
+        return Door(type,pos)
+    else:
+        return TileData(type,pos)
 
 class GameMap(object):
     input_mapping = {' ' : TileTypes.GRASS,
@@ -133,6 +150,7 @@ class GameMap(object):
         self.size   = Point(80,80)
         self.data   = [[TileTypes.GRASS for i in xrange(self.size.y)] for j in xrange(self.size.x)]
         self.actors = []
+        self.doors  = []
         self.player = None
         y = self.size.y - 1
         with open(os.path.join(globals.dirs.maps,name)) as f:
@@ -145,10 +163,12 @@ class GameMap(object):
                     line = line[:self.size.x]
                 for x,tile in enumerate(line):
                     try:
-                        self.data[x][y] = TileData(self.input_mapping[tile],Point(x,y))
+                        self.data[x][y] = TileDataFactory(self.input_mapping[tile],Point(x,y))
                         if self.input_mapping[tile] == TileTypes.PLAYER:
                             self.player = actors.Player(self,Point(x,y))
                             self.actors.append(self.player)
+                        if isinstance(self.data[x][y],Door):
+                            self.doors.append(self.data[x][y])
                     except KeyError:
                         raise globals.types.FatalError('Invalid map data')
                 y -= 1
@@ -198,3 +218,8 @@ class GameView(ui.RootElement):
             self.player_direction -= self.direction_amounts[key]
         elif key == pygame.K_ESCAPE:
             raise globals.types.FatalError('quit')
+
+        elif key == pygame.K_p:
+            for door in self.map.doors:
+                door.Toggle()
+            
