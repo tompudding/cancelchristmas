@@ -97,16 +97,19 @@ class TileTypes:
     DOOR_OPEN   = 4
     TILE        = 5
     PLAYER      = 6
+    WALL_COMPUTER = 7
 
-    Impassable = set((WALL,DOOR_CLOSED))
+    Impassable = set((WALL,DOOR_CLOSED,WALL_COMPUTER))
     Doors      = set((DOOR_CLOSED,DOOR_OPEN))
+    Computers  = set((WALL_COMPUTER,))
 
 class TileData(object):
-    texture_names = {TileTypes.GRASS       : 'grass.png',
-                     TileTypes.WALL        : 'wall.png',
-                     TileTypes.DOOR_CLOSED : 'door_closed.png',
-                     TileTypes.DOOR_OPEN   : 'door_open.png',
-                     TileTypes.TILE        : 'tile.png'}
+    texture_names = {TileTypes.GRASS         : 'grass.png',
+                     TileTypes.WALL          : 'wall.png',
+                     TileTypes.DOOR_CLOSED   : 'door_closed.png',
+                     TileTypes.DOOR_OPEN     : 'door_open.png',
+                     TileTypes.WALL_COMPUTER : 'wall_computer.png',
+                     TileTypes.TILE          : 'tile.png'}
     def __init__(self,type,pos):
         self.pos  = pos
         self.type = type
@@ -131,9 +134,14 @@ class Door(TileData):
             self.type = TileTypes.DOOR_CLOSED
         self.quad.SetTextureCoordinates(globals.atlas.TextureSpriteCoords(self.texture_names[self.type]))
 
+class Computer(TileData):
+    pass
+
 def TileDataFactory(type,pos):
     if type in TileTypes.Doors:
         return Door(type,pos)
+    elif type in TileTypes.Computers:
+        return Computer(type,pos)
     else:
         return TileData(type,pos)
 
@@ -143,6 +151,7 @@ class GameMap(object):
                      '|' : TileTypes.WALL,
                      '-' : TileTypes.WALL,
                      '+' : TileTypes.WALL,
+                     'c' : TileTypes.WALL_COMPUTER,
                      'd' : TileTypes.DOOR_CLOSED,
                      'o' : TileTypes.DOOR_OPEN,
                      'p' : TileTypes.PLAYER}
@@ -151,24 +160,28 @@ class GameMap(object):
         self.data   = [[TileTypes.GRASS for i in xrange(self.size.y)] for j in xrange(self.size.x)]
         self.actors = []
         self.doors  = []
+        self.computers = []
         self.player = None
         y = self.size.y - 1
         with open(os.path.join(globals.dirs.maps,name)) as f:
             for line in f:
                 line = line.strip('\n')
-        
+
                 if len(line) < self.size.x:
                     line += ' '*(self.size.x - len(line))
                 if len(line) > self.size.x:
                     line = line[:self.size.x]
                 for x,tile in enumerate(line):
                     try:
-                        self.data[x][y] = TileDataFactory(self.input_mapping[tile],Point(x,y))
+                        td = TileDataFactory(self.input_mapping[tile],Point(x,y))
+                        self.data[x][y] = td
                         if self.input_mapping[tile] == TileTypes.PLAYER:
                             self.player = actors.Player(self,Point(x,y))
                             self.actors.append(self.player)
-                        if isinstance(self.data[x][y],Door):
-                            self.doors.append(self.data[x][y])
+                        if isinstance(td,Door):
+                            self.doors.append(td)
+                        elif isinstance(td,Computer):
+                            self.computers.append(td)
                     except KeyError:
                         raise globals.types.FatalError('Invalid map data')
                 y -= 1
@@ -188,6 +201,17 @@ class GameView(ui.RootElement):
         self.viewpos = Viewpos(Point(0,0))
         self.viewpos.Follow(globals.time,self.map.player,)
         self.player_direction = Point(0,0)
+        self.text = ui.TextBox(globals.screen_root,
+                               bl = Point(0.15,0.15),
+                               tr = None,
+                               text = 'Press space to computer',
+                               scale = 2,
+                               colour = drawing.constants.colours.white)
+        self.text.box = ui.Box(parent = self.text,
+                               pos    = Point(-0.1,-0.2),
+                               tr     = Point(1.1,1.2),
+                               colour = (0,0,0,0.3))
+        self.text.Disable()
         super(GameView,self).__init__(Point(0,0),Point(*self.map.world_size))
 
     def Draw(self):
@@ -208,6 +232,10 @@ class GameView(ui.RootElement):
             self.viewpos.pos.y = (self.map.world_size.y - globals.screen.y)
 
         self.map.player.Move(self.player_direction)
+        if self.map.player.AdjacentComputer():
+            self.text.Enable()
+        else:
+            self.text.Disable()
 
     def KeyDown(self,key):
         if key in self.direction_amounts:

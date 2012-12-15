@@ -11,6 +11,7 @@ class Actor(object):
         self.map  = map
         self.quad = drawing.Quad(globals.quad_buffer,tc = globals.atlas.TextureSpriteCoords('hacker_front.png'))
         self.size = Point(float(9)/16,float(13)/16)
+        self.corners = Point(0,0),Point(self.size.x,0),Point(0,self.size.y),self.size
         self.SetPos(pos)
 
     def SetPos(self,pos):
@@ -22,7 +23,7 @@ class Actor(object):
     def Move(self,amount):
         amount = Point(amount.x,amount.y)
         #check each of our four corners
-        for corner in Point(0,0),Point(self.size.x,0),Point(0,self.size.y),self.size:
+        for corner in self.corners:
             pos = self.pos + corner
             target_x = pos.x + amount.x
             if target_x >= self.map.size.x:
@@ -52,4 +53,15 @@ class Actor(object):
         return self.pos
 
 class Player(Actor):
-    pass
+    def AdjacentComputer(self):
+        current_tiles = set((self.pos + corner).to_int() for corner in self.corners)
+        adjacent_tiles = set()
+        for tile in current_tiles:
+            for adjacent in (Point(0,1),):
+                target = tile + adjacent
+                try:
+                    tile_data = self.map.data[target.x][target.y]
+                except IndexError:
+                    continue
+                if isinstance(tile_data,game_view.Computer):
+                    return tile_data
