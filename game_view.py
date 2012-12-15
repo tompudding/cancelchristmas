@@ -163,11 +163,16 @@ class Computer(TileData):
         super(Computer,self).__init__(type,pos)
         self.terminal = None
         self.terminal_type = terminal_type
-    def SetScreen(self,parent,screen):
+        self.screen = ui.Box(parent = globals.screen_root,
+                             pos = Point(0,0.45) + (Point(25,25).to_float()/globals.screen),
+                             tr = Point(1,1) - (Point(25,25).to_float()/globals.screen),
+                             colour = drawing.constants.colours.black)
+        self.screen.Disable()
+
+    def SetScreen(self,parent):
         self.parent   = parent
-        self.screen   = screen
         if self.terminal == None:
-            self.terminal = self.terminal_type(parent     = screen,
+            self.terminal = self.terminal_type(parent     = self.screen,
                                                gameview   = self.parent,
                                                computer   = self,
                                                background = drawing.constants.colours.black,
@@ -187,7 +192,7 @@ class Computer(TileData):
 
     def KeyUp(self,key):
         if key == pygame.K_ESCAPE:
-            #self.terminal.Disable()
+            self.screen.Disable()
             self.parent.CloseScreen()
         if self.current_key:
             self.current_key = None
@@ -302,11 +307,6 @@ class GameView(ui.RootElement):
                                colour = (0,0,0,0.3))
         self.text.Disable()
         self.switch_text.Disable()
-        self.computer_screen = ui.Box(parent = globals.screen_root,
-                                      pos = Point(0,0.45) + (Point(25,25).to_float()/globals.screen),
-                                      tr = Point(1,1) - (Point(25,25).to_float()/globals.screen),
-                                      colour = drawing.constants.colours.black)
-        self.computer_screen.Disable()
         self.computer = None
         super(GameView,self).__init__(Point(0,0),Point(*self.map.world_size))
 
@@ -342,7 +342,6 @@ class GameView(ui.RootElement):
             self.switch_text.Disable()
 
     def CloseScreen(self):
-        self.computer_screen.Disable()
         self.computer = None
 
     def KeyDown(self,key):
@@ -367,8 +366,8 @@ class GameView(ui.RootElement):
             computer = self.map.player.AdjacentComputer()
             if computer:
                 self.text.Disable()
-                self.computer_screen.Enable()
-                computer.SetScreen(self,self.computer_screen)
+                computer.screen.Enable()
+                computer.SetScreen(self)
                 self.computer = computer
             switch = self.map.player.AdjacentSwitch()
             if switch:
