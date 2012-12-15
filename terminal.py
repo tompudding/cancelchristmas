@@ -18,7 +18,7 @@ class Emulator(ui.UIElement):
         super(Emulator,self).__init__(parent,bl,tr)
         self.background_colour = background
         self.foreground_colour = foreground
-        self.scale = 3
+        self.scale = 2
         self.size = (self.absolute.size/(globals.text_manager.GetSize(' ',self.scale).to_float())).to_int()
         self.quads = []
         self.mode  = Modes.ENTRY
@@ -48,6 +48,7 @@ class Emulator(ui.UIElement):
         return self.Banner
 
     def Update(self,t):
+        self.t = t
         if self.cursor_flash == None:
             self.cursor_flash = t
             return
@@ -136,12 +137,21 @@ class Emulator(ui.UIElement):
                 globals.text_manager.SetLetterCoords(self.quads[x][y],' ')
                 
 
-    def EntryAddKey(self,key):
-        print 'entry add key!'
+    def ViewAddKey(self,key):
+        self.FlashOff()
+        if key == pygame.K_LEFT:
+            if self.cursor.x > 0:
+                self.cursor.x -= 1
+        if key == pygame.K_RIGHT:
+            if self.cursor.x < self.size.x - 1:
+                self.cursor.x += 1
+        self.cursor_flash = self.t
+        self.FlashOn()
 
     def AddKey(self,key,userInput = True):
-        if self.mode == Modes.ENTRY:
-            self.EntryAddKey(key)
+        if self.mode == Modes.VIEW:
+            self.ViewAddKey(key)
+            return
         #Handle special keys
         self.FlashOff()
         if key == pygame.K_RETURN:
