@@ -19,15 +19,32 @@ class Emulator(ui.UIElement):
             col = []
             for y in xrange(self.size.y):
                 q = globals.text_manager.Letter(' ',drawing.texture.TextTypes.SCREEN_RELATIVE)
-                bl = (Point(x,y).to_float())/self.size
-                tr = (Point(x+1,y+1).to_float())/self.size
-                q.SetVertices(self.GetAbsolute(bl),self.GetAbsolute(tr),2)
+                bl = (Point(x,self.size.y - 1 - y).to_float())/self.size
+                tr = (Point(x+1,self.size.y - y).to_float())/self.size
+                q.SetVertices(self.GetAbsolute(bl),self.GetAbsolute(tr),drawing.constants.DrawLevels.ui + self.background.level + 1)
                 col.append(q)
             self.quads.append(col)
             
         self.cursor = Point(0,0)
 
     def AddKey(self,key):
+        #Handle special keys
+        if key == pygame.K_RETURN:
+            #Move to the start of the next line
+            for i in xrange(self.size.x - self.cursor.x):
+                self.AddKey(ord(' '))
+        elif key == pygame.K_BACKSPACE:
+            if self.cursor.x == 0:
+                if self.cursor.y == 0:
+                    return
+                self.cursor.x = self.size.x - 1
+                self.cursor.y -= 1
+            else:
+                self.cursor.x -= 1
+            c = Point(self.cursor.x,self.cursor.y)
+            self.AddKey(ord(' '))
+            self.cursor = c
+            return
         try:
             key = chr(key)
         except ValueError:
@@ -35,6 +52,7 @@ class Emulator(ui.UIElement):
         if not globals.text_manager.HasKey(key):
             return
         globals.text_manager.SetLetterCoords(self.quads[self.cursor.x][self.cursor.y],key)
+
         self.cursor.x += 1
         if self.cursor.x >= self.size.x:
             self.cursor.x = 0
@@ -43,5 +61,6 @@ class Emulator(ui.UIElement):
             #Move everything up
             for x in xrange(self.size.x):
                 for y in xrange(self.size.y):
-                    SetLetterCoords(self.quads[x][y],self.quads[x][y+1].letter if y+1 < self.size.y else ' ')
+                    globals.text_manager.SetLetterCoords(self.quads[x][y],self.quads[x][y+1].letter if y+1 < self.size.y else ' ')
+            self.cursor.y = self.size.y - 1
         print 'addkey',key,self.cursor
