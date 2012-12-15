@@ -198,10 +198,11 @@ class TextManager(object):
                             TextTypes.MOUSE_RELATIVE  : globals.mouse_relative_buffer}
 
 
-    def Letter(self,char,textType,userBuffer = None):
+    def Letter(self,char,textType,colour = constants.colours.white,userBuffer = None):
         """ Given a character, return a quad with the corresponding letter on it in this textManager's font """
         quad = quads.Quad(userBuffer if textType == TextTypes.CUSTOM else TextTypes.BUFFER[textType])    
         quad.tc[0:4]  = self.atlas.TextureCoords(char)
+        quad.SetColour(colour)
         #this is a bit dodge, should get its own class if I want to store extra things in it
         quad.width,quad.height = self.atlas.Subimage(char).size
         quad.letter = char

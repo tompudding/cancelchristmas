@@ -146,17 +146,19 @@ class Computer(TileData):
         self.parent   = parent
         self.screen   = screen
         if self.terminal == None:
-            self.terminal = terminal.Emulator(parent     = screen,
-                                              background = drawing.constants.colours.black,
-                                              foreground = drawing.constants.colours.green)
+            self.terminal = terminal.GrotoEntryTerminal(parent     = screen,
+                                                        background = drawing.constants.colours.black,
+                                                        foreground = drawing.constants.colours.green)
         #else:
         #    self.terminal.Enable()
         self.current_key = None
 
     def KeyDown(self,key):
-        if key == pygame.K_ESCAPE:
+        if key in (pygame.K_ESCAPE,):
             return
         self.current_key = key
+        if key == pygame.K_TAB:
+            return
         self.last_keyrepeat = None
         self.terminal.AddKey(key)
 
@@ -170,6 +172,10 @@ class Computer(TileData):
     def Update(self,t):
         self.terminal.Update(t)
         if not self.current_key:
+            return
+        elif self.current_key == pygame.K_TAB:
+            self.terminal.ToggleMode()
+            self.current_key = None
             return
         if self.last_keyrepeat == None:
             self.last_keyrepeat = t+self.initial_key_repeat
@@ -254,7 +260,7 @@ class GameView(ui.RootElement):
                                colour = (0,0,0,0.3))
         self.text.Disable()
         self.computer_screen = ui.Box(parent = globals.screen_root,
-                                      pos = Point(50,50).to_float()/globals.screen,
+                                      pos = Point(0,0.5) + (Point(50,50).to_float()/globals.screen),
                                       tr = Point(1,1) - (Point(50,50).to_float()/globals.screen),
                                       colour = drawing.constants.colours.black)
         self.computer_screen.Disable()
