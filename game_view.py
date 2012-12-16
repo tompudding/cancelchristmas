@@ -119,10 +119,11 @@ class TileTypes:
     NAUGHTY_LIST      = 15
     SNOWMAN           = 16
     SANTA             = 17
+    ELF               = 18
 
     Doors      = set((DOOR_CLOSED,DOOR_OPEN))
     Computers  = set((PIN_ENTRY,DISGUISED_PIN,OVERFLOW_INTO_PIN,SQL_INJECTION,INTEGER_OVERFLOW,FINAL_CHALLENGE,KEYWORD,NAUGHTY_LIST))
-    Impassable = set((WALL,DOOR_CLOSED,SWITCH,SNOWMAN,SANTA)) | Computers
+    Impassable = set((WALL,DOOR_CLOSED,SWITCH,SNOWMAN,SANTA,ELF)) | Computers
 
 class TileData(object):
     texture_names = {TileTypes.GRASS         : 'grass.png',
@@ -132,7 +133,8 @@ class TileData(object):
                      TileTypes.TILE          : 'tile.png',
                      TileTypes.SWITCH        : 'switch.png',
                      TileTypes.SNOWMAN       : 'snowman.png',
-                     TileTypes.SANTA         : 'tile.png'}
+                     TileTypes.SANTA         : 'tile.png',
+                     TileTypes.ELF           : 'tile.png'}
     for t in TileTypes.Computers:
         texture_names[t] = 'wall_computer.png'
     #keywords look different
@@ -278,7 +280,8 @@ class GameMap(object):
                      'o' : TileTypes.DOOR_OPEN,
                      'k' : TileTypes.KEYWORD,
                      'p' : TileTypes.PLAYER,
-                     'q' : TileTypes.SANTA}
+                     'q' : TileTypes.SANTA,
+                     'e' : TileTypes.ELF}
     def __init__(self,name):
         self.size   = Point(35,35)
         self.data   = [[TileTypes.GRASS for i in xrange(self.size.y)] for j in xrange(self.size.x)]
@@ -288,6 +291,7 @@ class GameMap(object):
         self.switches = []
         self.player = None
         self.santa = None
+        self.elves = []
         y = self.size.y - 1
         with open(name) as f:
             for line in f:
@@ -308,6 +312,10 @@ class GameMap(object):
                         if self.input_mapping[tile] == TileTypes.SANTA:
                             self.santa = actors.Santa(self,Point(x+0.2,y))
                             self.actors.append(self.santa)
+                        if self.input_mapping[tile] == TileTypes.ELF:
+                            elf = actors.Elf(self,Point(x+0.25,y+0.1))
+                            self.elves.append(elf)
+                            self.actors.append(elf)
                         if isinstance(td,Door):
                             self.doors.append(td)
                         elif isinstance(td,Computer):

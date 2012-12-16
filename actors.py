@@ -115,3 +115,8 @@ class Santa(Actor):
     width = 11
     height = 15
     texture = 'santa'
+
+class Elf(Actor):
+    width = 7
+    height = 12
+    texture = 'elf'
