@@ -197,6 +197,7 @@ class GameOver(Mode):
         self.start = None
         self.blurb_text.EnableChars(0)
         self.stage = TitleStages.TEXT
+        self.played_sound = False
         #pygame.mixer.music.load('end_fail.mp3')
         #pygame.mixer.music.play(-1)
 
@@ -221,6 +222,9 @@ class GameOver(Mode):
             if self.elapsed < len(self.blurb_text.text)*self.letter_duration:
                 num_enabled = int(self.elapsed/self.letter_duration)
                 self.blurb_text.EnableChars(num_enabled)
+                if not self.played_sound and num_enabled > self.blurb.index('Merry'):
+                    globals.sounds.merrychristmas.play()
+                    self.played_sound = True
             else:
                 self.skipped_text = True
         elif self.continued:
@@ -231,6 +235,9 @@ class GameOver(Mode):
     def KeyDown(self,key):
         #if key in [13,27,32]: #return, escape, space
         if not self.skipped_text:
+            if not self.played_sound:
+                globals.sounds.merrychristmas.play()
+                self.played_sound = True
             self.SkipText()
         else:
             self.continued = True
