@@ -16,7 +16,7 @@ def Init():
     globals.backdrop_buffer       = drawing.QuadBuffer(8)
     globals.colour_tiles          = drawing.QuadBuffer(131072)
     globals.mouse_relative_buffer = drawing.QuadBuffer(1024)
-    globals.tile_scale            = Point(3,3)
+    globals.tile_scale            = Point(4,4)
     globals.tile_dimensions       = Point(16,16)*globals.tile_scale
     #globals.sounds                = sounds.Sounds()
 
