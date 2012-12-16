@@ -5,11 +5,22 @@ import drawing
 import os
 import game_view
 
+class Directions:
+    UP    = 0
+    DOWN  = 1
+    RIGHT = 2
+    LEFT  = 3
 
 class Actor(object):
     def __init__(self,map,pos):
         self.map  = map
-        self.quad = drawing.Quad(globals.quad_buffer,tc = globals.atlas.TextureSpriteCoords('hacker_front.png'))
+        self.dirs = ((Directions.UP   ,'back' ),
+                     (Directions.DOWN ,'front'),
+                     (Directions.LEFT ,'left' ),
+                     (Directions.RIGHT,'right'))
+        self.dirs = {dir : globals.atlas.TextureSpriteCoords('hacker_%s.png' % name) for (dir,name) in self.dirs}
+        self.dir = Directions.DOWN
+        self.quad = drawing.Quad(globals.quad_buffer,tc = self.dirs[self.dir])
         self.size = Point(float(9)/16,float(13)/16)
         self.corners = Point(0,0),Point(self.size.x,0),Point(0,self.size.y),self.size
         self.SetPos(pos)
@@ -22,6 +33,18 @@ class Actor(object):
 
     def Move(self,amount):
         amount = Point(amount.x,amount.y)
+        dir = None
+        if amount.x > 0:
+            dir = Directions.RIGHT
+        elif amount.x < 0:
+            dir = Directions.LEFT
+        elif amount.y > 0:
+            dir = Directions.UP
+        elif amount.y < 0:
+            dir = Directions.DOWN
+        if dir != None and dir != self.dir:
+            self.dir = dir
+            self.quad.SetTextureCoordinates(self.dirs[self.dir])
         #check each of our four corners
         for corner in self.corners:
             pos = self.pos + corner
