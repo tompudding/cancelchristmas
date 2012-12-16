@@ -18,7 +18,8 @@ class Actor(object):
                      (Directions.DOWN ,'front'),
                      (Directions.LEFT ,'left' ),
                      (Directions.RIGHT,'right'))
-        self.dirs = {dir : globals.atlas.TextureSpriteCoords('hacker_%s.png' % name) for (dir,name) in self.dirs}
+        #self.dirs = {dir : globals.atlas.TextureSpriteCoords('hacker_%s.png' % name) for (dir,name) in self.dirs}
+        self.dirs = dict((dir,globals.atlas.TextureSpriteCoords('hacker_%s.png' % name)) for (dir,name) in self.dirs)
         self.dir = Directions.DOWN
         self.quad = drawing.Quad(globals.quad_buffer,tc = self.dirs[self.dir])
         self.size = Point(float(9)/16,float(13)/16)
