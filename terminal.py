@@ -246,15 +246,14 @@ class GrotoEntryTerminal(Emulator):
     Banner = 'Welcome to Santa\'s Grotto! Enter the PIN to continue:'
     success_message = 'Correct, ACCESS GRANTED!'
     fail_message = 'That is not correct. Humbug!'
-    code = """
-terminal.write("{banner}")
+    code = """print("{banner}")
 while True:
-    pin = terminal.GetLine()
+    pin = raw_input()
     if pin == '{pin}':
-        terminal.write("{success}")
+        print("{success}")
         door.open()
     else:
-        terminal.write("{fail}")
+        print("{fail}")
 """.format(banner  = Banner,
            success = success_message,
            fail    = fail_message,
