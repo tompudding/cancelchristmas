@@ -78,7 +78,7 @@ class Titles(Mode):
         self.view_target = Point(self.parent.map.world_size.x*0.5-globals.screen.x*0.5,self.parent.map.world_size.y-globals.screen.y*1)
         self.parent.viewpos.SetTarget(self.view_target,
                                       t,
-                                      rate = 0.4,
+                                      rate = 0.6,
                                       callback = self.Scrolled)
         self.backdrop_start = float(t)
         self.backdrop_end   = float(t + 2000)
@@ -129,7 +129,8 @@ class Titles(Mode):
                 globals.sounds.cancelchristmas.play()
                 self.skipped_text = True
         elif self.continued:
-            self.parent.viewpos.SetTarget(self.parent.map.player.GetPos()-(globals.screen*0.5),t,rate = 0.6,callback = self.ScrolledDown)
+            target = (self.parent.map.player.GetPos()*globals.tile_dimensions) - globals.screen*0.5
+            self.parent.viewpos.SetTarget(target,t,rate = 0.6,callback = self.ScrolledDown)
             #self.parent.viewpos.Follow(t,self.parent.ship)
             self.backdrop_start = float(t)
             self.backdrop_end   = float(t + 2000)
