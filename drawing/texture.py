@@ -134,7 +134,8 @@ class TextureAtlas(object):
         value[1] = subimage.pos.y + value[1]*(float(subimage.size.y)/self.texture.height)
     
     def TransformCoords(self,subimage,tc):
-        subimage = '_'.join(subimage.split(os.path.sep))
+        if subimage != '/':
+            subimage = '_'.join(subimage.split(os.path.sep))
         subimage = self.subimages[subimage]
         for i in xrange(len(tc)):
             self.TransformCoord(subimage,tc[i])

@@ -215,7 +215,7 @@ class Computer(TileData):
 
 terminals = {TileTypes.PIN_ENTRY         : terminal.GrotoEntryTerminal,
              TileTypes.DISGUISED_PIN     : terminal.DisguisedPinTerminal,
-             TileTypes.OVERFLOW_INTO_PIN : terminal.DisguisedPinTerminal,
+             TileTypes.OVERFLOW_INTO_PIN : terminal.OverflowPinTerminal,
              TileTypes.SQL_INJECTION     : terminal.DisguisedPinTerminal,
              TileTypes.INTEGER_OVERFLOW  : terminal.DisguisedPinTerminal,
              TileTypes.FINAL_CHALLENGE   : terminal.DisguisedPinTerminal,

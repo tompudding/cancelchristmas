@@ -54,9 +54,9 @@ class Emulator(ui.UIElement):
         self.saved_buffer = []
 
         self.text = ui.TextBox(self,
-                               bl = Point(0.22,-0.14),
+                               bl = Point(0.15,-0.14),
                                tr = None,
-                               text = 'Press TAB to switch to code view',
+                               text = 'Press TAB to switch to code view, ESC to close',
                                scale = 2,
                                colour = drawing.constants.colours.green)
         #self.text_box = ui.Box(parent = self,
@@ -120,14 +120,14 @@ class Emulator(ui.UIElement):
 
     def ToggleMode(self):
         if self.mode == Modes.ENTRY:
-            self.text.SetText('Press TAB to swtich to console mode',colour = drawing.constants.colours.green)
+            self.text.SetText('Press TAB to switch to console mode,ESC to close',colour = drawing.constants.colours.green)
             self.mode = Modes.VIEW
             #Save off the current entry buffer for restoring
             self.SaveEntryBuffer()
             self.cursor = self.cursor_view
             self.SetViewBuffer()
         else:
-            self.text.SetText('Press TAB to swtich to code mode',colour = drawing.constants.colours.green)
+            self.text.SetText('Press TAB to switch to code mode, ESC to close',colour = drawing.constants.colours.green)
             self.mode = Modes.ENTRY
             self.cursor = self.cursor_entry
             self.RestoreEntryBuffer()
@@ -273,8 +273,7 @@ while True:
         return self.code.format(pin = self.pin)
             
 class DisguisedPinTerminal(GrotoEntryTerminal):
-    code = """
-terminal.write("{banner}")
+    code = """terminal.write("{banner}")
 while True:
     pin = terminal.GetLine()
     if ((pin*77)+1435)%385680 == '{pin}':
@@ -304,3 +303,58 @@ class KeywordTerminal(Emulator):
 
     def GetCode(self):
         return ''
+
+class OverflowPinTerminal(Emulator):
+    Banner = 'Welcome to Present Preparation. Please enter your username'
+    code = """#include <stdio.h>
+
+struct elfdata {
+    char elfname[8];
+    char given_pin[4];
+    char correct_pin[4];
+};
+
+void SuperSecretPinLookup(char *elfname,char* pin) {
+    [REDACTED]
+}
+
+int main(void) {
+    struct elfdata elf = {0};
+    int i;
+
+    while(1) {
+
+        printf("Enter your username:\\n");
+        //The man page tells me not to use gets ever due to a danger
+        //of buffer overflows. I'm SANTA and I can do what I please!.
+        gets(elf.elfname);
+    
+        //We need to lookup their pin from the secret store
+        SuperSecretPinLookup(elf.elfname,elf.correct_pin);
+
+        //Now check to see if the forgetful elf remembers their pin
+        printf("Welcome %s, Enter your PIN:\\n",elf.elfname);
+    
+        gets(elf.given_pin);
+
+        //Now check if the pins match
+        for(i=0;i<4;i++) {
+            if(elf.given_pin[i] != elf.correct_pin[i]) {
+                //A mismatch!
+                break;
+            }
+        }
+        //Did we get through  the whole loop? i will be 4 if so
+        if(i == 4) {
+            printf("Correct!\\n");
+            toggle_door();
+        }
+        else {
+            printf("Incorrect!\\n");
+        }
+
+    }
+}
+"""
+    def GetCode(self):
+        return self.code
