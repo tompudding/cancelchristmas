@@ -337,6 +337,9 @@ class GameView(ui.RootElement):
         self.viewpos = Viewpos(Point(0,0))
         self.player_direction = Point(0,0)
         self.game_over = False
+        pygame.mixer.music.load('shitty_music.mp3')
+        pygame.mixer.music.play(-1)
+        self.music_playing = True
         self.text = ui.TextBox(globals.screen_root,
                                bl = Point(0.15,0.15),
                                tr = None,
@@ -367,6 +370,16 @@ class GameView(ui.RootElement):
                                pos    = Point(-0.1,-0.2),
                                tr     = Point(1.1,1.2),
                                colour = (0,0,0,0.3))
+        self.music_text = ui.TextBox(globals.screen_root,
+                               bl = Point(0.5,0.02),
+                               tr = None,
+                               text = 'Press delete to mute the annoying music',
+                               scale = 2,
+                               colour = drawing.constants.colours.white)
+        self.music_text.box = ui.Box(parent = self.music_text,
+                               pos    = Point(-0.1,-0.2),
+                               tr     = Point(1.1,1.2),
+                               colour = (0,0,0,0.9))
         self.text.Disable()
         self.switch_text.Disable()
         self.computer = None
@@ -431,5 +444,12 @@ class GameView(ui.RootElement):
         self.mode.KeyDown(key)
 
     def KeyUp(self,key):
+        if key == pygame.K_DELETE:
+            if self.music_playing:
+                self.music_playing = False
+                pygame.mixer.music.set_volume(0)
+            else:
+                self.music_playing = True
+                pygame.mixer.music.set_volume(1)
         self.mode.KeyUp(key)
 
