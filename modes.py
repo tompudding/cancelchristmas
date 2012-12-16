@@ -108,7 +108,7 @@ class Titles(Mode):
                                      colour = (1,1,1,1),
                                      scale  = 4)
         self.title_text = ui.TextBox(parent = self.parent,
-                                     bl     = bl + self.parent.GetRelative(Point(globals.screen.x*0.25,0)),
+                                     bl     = bl + self.parent.GetRelative(Point(globals.screen.x*0.2,0)),
                                      tr     = bl + self.parent.GetRelative(Point(globals.screen.x,globals.screen.y*0.7)),
                                      text   = 'Cancel\n  Christmas!!!',
                                      colour = (1,1,1,1),
@@ -143,7 +143,7 @@ class Titles(Mode):
         self.blurb_text.Delete()
         self.title_text.Delete()
         self.stage = TitleStages.COMPLETE
-        
+        self.parent.viewpos.Follow(globals.time,self.parent.map.player)
 
     def KeyDown(self,key):
         #if key in [13,27,32]: #return, escape, space
@@ -245,23 +245,40 @@ class Titles(Mode):
 #         return False,False
 
 class GameMode(Mode):
+    speed = 8
+    direction_amounts = {pygame.K_LEFT  : Point(-0.01*speed, 0.00),
+                         pygame.K_RIGHT : Point( 0.01*speed, 0.00),
+                         pygame.K_UP    : Point( 0.00, 0.01*speed),
+                         pygame.K_DOWN  : Point( 0.00,-0.01*speed)}
+    class KeyFlags:
+        LEFT  = 1
+        RIGHT = 2
+        UP    = 4
+        DOWN  = 8
+    keyflags = {pygame.K_LEFT  : KeyFlags.LEFT,
+                pygame.K_RIGHT : KeyFlags.RIGHT,
+                pygame.K_UP    : KeyFlags.UP,
+                pygame.K_DOWN  : KeyFlags.DOWN}
     """This is a bit of a cheat class as I'm rushed. Just pass everything back"""
     def __init__(self,parent):
         self.parent            = parent
+        self.keydownmap = 0
 
     def KeyDown(self,key):
         if self.parent.computer:
             return self.parent.computer.KeyDown(key)
-        if key in self.parent.direction_amounts:
-            self.parent.player_direction += self.parent.direction_amounts[key]
+        if key in self.direction_amounts:
+            self.keydownmap |= self.keyflags[key]
+            self.parent.player_direction += self.direction_amounts[key]
 
     def KeyUp(self,key):
         if self.parent.computer:
             return self.parent.computer.KeyUp(key)
-        if key in self.parent.direction_amounts:
-            self.parent.player_direction -= self.parent.direction_amounts[key]
-        elif key == pygame.K_ESCAPE:
-            raise globals.types.FatalError('quit')
+        if key in self.direction_amounts and (self.keydownmap & self.keyflags[key]):
+            self.keydownmap &= (~self.keyflags[key])
+            self.parent.player_direction -= self.direction_amounts[key]
+        #elif key == pygame.K_ESCAPE:
+        #    raise globals.types.FatalError('quit')
 
         elif key == pygame.K_p:
             for door in self.parent.map.doors:
@@ -272,7 +289,7 @@ class GameMode(Mode):
             if computer:
                 self.parent.text.Disable()
                 computer.screen.Enable()
-                computer.SetScreen(self)
+                computer.SetScreen(self.parent)
                 self.parent.computer = computer
             switch = self.parent.map.player.AdjacentSwitch()
             if switch:

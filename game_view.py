@@ -303,7 +303,6 @@ class GameView(ui.RootElement):
         self.map = GameMap('level1.txt')
         self.map.world_size = self.map.size * globals.tile_dimensions
         self.viewpos = Viewpos(Point(0,0))
-        self.viewpos.Follow(globals.time,self.map.player,)
         self.player_direction = Point(0,0)
         self.text = ui.TextBox(globals.screen_root,
                                bl = Point(0.15,0.15),
