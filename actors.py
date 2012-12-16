@@ -12,24 +12,34 @@ class Directions:
     LEFT  = 3
 
 class Actor(object):
+    texture = None
+    width = None
+    height = None
     def __init__(self,map,pos):
         self.map  = map
-        self.dirs = ((Directions.UP   ,'back' ),
+        self.dirsa = ((Directions.UP   ,'back' ),
                      (Directions.DOWN ,'front'),
                      (Directions.LEFT ,'left' ),
                      (Directions.RIGHT,'right'))
         #self.dirs = {dir : globals.atlas.TextureSpriteCoords('hacker_%s.png' % name) for (dir,name) in self.dirs}
-        self.dirs = dict((dir,globals.atlas.TextureSpriteCoords('hacker_%s.png' % name)) for (dir,name) in self.dirs)
+        self.dirs = {}
+        for dir,name in self.dirsa:
+            try:
+                tc = globals.atlas.TextureSpriteCoords('%s_%s.png' % (self.texture,name))
+            except KeyError:
+                tc = globals.atlas.TextureSpriteCoords('%s_front.png' % self.texture)
+            self.dirs[dir] = tc
+        #self.dirs = dict((dir,globals.atlas.TextureSpriteCoords('%s_%s.png' % (self.texture,name))) for (dir,name) in self.dirs)
         self.dir = Directions.DOWN
         self.quad = drawing.Quad(globals.quad_buffer,tc = self.dirs[self.dir])
-        self.size = Point(float(9)/16,float(13)/16)
+        self.size = Point(float(self.width)/16,float(self.height)/16)
         self.corners = Point(0,0),Point(self.size.x,0),Point(0,self.size.y),self.size
         self.SetPos(pos)
 
     def SetPos(self,pos):
         self.pos = pos
         bl = pos * globals.tile_dimensions
-        tr = bl + (globals.tile_scale*Point(9,13))
+        tr = bl + (globals.tile_scale*Point(self.width,self.height))
         self.quad.SetVertices(bl,tr,1)
 
     def Move(self,amount):
@@ -77,6 +87,10 @@ class Actor(object):
         return self.pos
 
 class Player(Actor):
+    texture = 'hacker'
+    width = 9
+    height = 13
+
     def AdjacentItem(self,item_type):
         current_tiles = set((self.pos + corner).to_int() for corner in self.corners)
         adjacent_tiles = set()
@@ -96,3 +110,8 @@ class Player(Actor):
 
     def AdjacentSwitch(self):
         return self.AdjacentItem(game_view.Switch)
+
+class Santa(Actor):
+    width = 11
+    height = 15
+    texture = 'santa'

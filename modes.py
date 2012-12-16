@@ -147,11 +147,12 @@ class Titles(Mode):
         self.parent.viewpos.Follow(globals.time,self.parent.map.player)
 
     def KeyDown(self,key):
-        if self.parent.viewpos.target and not self.parent.viewpos.follow:
-            if self.backdrop_end:
-                self.backdrop_end = self.backdrop_start + 1
-            self.parent.viewpos.Skip()
         if key in [13,27,32]: 
+            if self.parent.viewpos.target and not self.parent.viewpos.follow:
+                if self.backdrop_end:
+                    self.backdrop_end = self.backdrop_start + 1
+                self.parent.viewpos.Skip()
+        
             if not self.skipped_text:
                 self.SkipText()
             else:
