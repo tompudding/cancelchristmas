@@ -107,10 +107,11 @@ class TileTypes:
     FINAL_CHALLENGE   = 13
     KEYWORD           = 14
     NAUGHTY_LIST      = 15
+    SNOWMAN           = 16
 
     Doors      = set((DOOR_CLOSED,DOOR_OPEN))
     Computers  = set((PIN_ENTRY,DISGUISED_PIN,OVERFLOW_INTO_PIN,SQL_INJECTION,INTEGER_OVERFLOW,FINAL_CHALLENGE,KEYWORD,NAUGHTY_LIST))
-    Impassable = set((WALL,DOOR_CLOSED,SWITCH)) | Computers
+    Impassable = set((WALL,DOOR_CLOSED,SWITCH,SNOWMAN)) | Computers
 
 class TileData(object):
     texture_names = {TileTypes.GRASS         : 'grass.png',
@@ -118,7 +119,8 @@ class TileData(object):
                      TileTypes.DOOR_CLOSED   : 'door_closed.png',
                      TileTypes.DOOR_OPEN     : 'door_open.png',
                      TileTypes.TILE          : 'tile.png',
-                     TileTypes.SWITCH        : 'switch.png'}
+                     TileTypes.SWITCH        : 'switch.png',
+                     TileTypes.SNOWMAN       : 'snowman.png'}
     for t in TileTypes.Computers:
         texture_names[t] = 'wall_computer.png'
     def __init__(self,type,pos):
@@ -241,6 +243,7 @@ class GameMap(object):
                      '+' : TileTypes.WALL,
                      'c' : TileTypes.PIN_ENTRY,
                      's' : TileTypes.SWITCH,
+                     'n' : TileTypes.SNOWMAN,
                      '1' : TileTypes.DISGUISED_PIN,
                      '2' : TileTypes.OVERFLOW_INTO_PIN,
                      '3' : TileTypes.SQL_INJECTION,
