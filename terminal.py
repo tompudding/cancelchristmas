@@ -1,5 +1,6 @@
 from OpenGL.GL import *
 import random,numpy,cmath,math,pygame
+import hashlib
 import string
 
 import ui,globals,drawing,os,copy
@@ -305,13 +306,17 @@ class KeywordTerminal(Emulator):
         return ''
 
 class OverflowPinTerminal(Emulator):
+    class States:
+        ENTER_NAME = 0
+        ENTER_PIN  = 1
+        
     Banner = 'Welcome to Present Preparation. Please enter your username'
     code = """#include <stdio.h>
 
 struct elfdata {
     char elfname[8];
-    char given_pin[4];
-    char correct_pin[4];
+    char given_pin[5];   //4 characters and room for the null
+    char correct_pin[5]; //4 characters and room for the null
 };
 
 void SuperSecretPinLookup(char *elfname,char* pin) {
@@ -324,7 +329,8 @@ int main(void) {
 
     while(1) {
 
-        printf("Enter your username:\\n");
+        printf("Welcome to Present Preparation. Please enter your \
+username:\\n");
         //The man page tells me not to use gets ever due to a danger
         //of buffer overflows. I'm SANTA and I can do what I please!.
         gets(elf.elfname);
@@ -352,9 +358,49 @@ int main(void) {
         else {
             printf("Incorrect!\\n");
         }
-
     }
 }
 """
+    def __init__(self,*args,**kwargs):
+        self.state = self.States.ENTER_NAME
+        self.rand = ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for i in xrange(32))
+        super(OverflowPinTerminal,self).__init__(*args,**kwargs)
+
+    def Dispatch(self,command):
+        if self.state == self.States.ENTER_NAME:
+            self.name = command
+            #simulate an overflow here, it's subtle, but if the user overflows into given_pin,
+            #and then when later asked for their pin their write 4 or fewer characters (with the null)
+            #then the pin checked will have some characters set from this initial overflow.
+            #Actually ignore this because I can't be bothered!
+            
+            self.AddMessage('Welcome %s, Enter your PIN:' % self.name)
+            self.state = self.States.ENTER_PIN
+        elif self.state == self.States.ENTER_PIN:
+            command += '\x00'
+            pin = command[:4]
+            for i in xrange(len(pin),4):
+                try:
+                    pin += self.name[i+8]
+                except IndexError:
+                    pin += '\x00'
+            h = hashlib.sha1(self.rand + self.name).digest()
+            correct_pin = []
+            for b in h[4:8]:
+                correct_pin.append('%d' % (ord(b)%10)) #Fun fact, this isn't flat random, 0-5 are more likely! Do you know why?
+
+            #Simulate the overflow into the computed pin
+            for i,c in enumerate(command[5:9]):
+                correct_pin[i] = c
+            correct_pin = ''.join(correct_pin)
+            print pin,correct_pin
+            if pin == correct_pin:
+                self.AddMessage('Correct!')
+                self.door.Toggle()
+            else:
+                self.AddMessage('Incorrect!')
+            self.AddMessage(self.Banner)
+            self.state = self.States.ENTER_NAME                
+
     def GetCode(self):
         return self.code
