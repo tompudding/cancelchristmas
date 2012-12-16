@@ -176,7 +176,7 @@ class TextTypes:
     GRID_RELATIVE   = 2
     MOUSE_RELATIVE  = 3
     CUSTOM          = 4
-    LEVELS          = {SCREEN_RELATIVE : constants.DrawLevels.text,
+    LEVELS          = {SCREEN_RELATIVE : constants.DrawLevels.ui + 0.1,
                        CUSTOM          : constants.DrawLevels.text,
                        GRID_RELATIVE   : constants.DrawLevels.ui + 0.1,
                        MOUSE_RELATIVE  : constants.DrawLevels.text}         
