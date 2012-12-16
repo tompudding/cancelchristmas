@@ -118,6 +118,7 @@ class TileTypes:
     KEYWORD           = 14
     NAUGHTY_LIST      = 15
     SNOWMAN           = 16
+    SANTA             = 17
 
     Doors      = set((DOOR_CLOSED,DOOR_OPEN))
     Computers  = set((PIN_ENTRY,DISGUISED_PIN,OVERFLOW_INTO_PIN,SQL_INJECTION,INTEGER_OVERFLOW,FINAL_CHALLENGE,KEYWORD,NAUGHTY_LIST))

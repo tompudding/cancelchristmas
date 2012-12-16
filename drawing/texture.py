@@ -20,7 +20,7 @@ global_scale = 1
 class Texture(object):
     """ Load a file into a gltexture and store that texture for later use """
     def __init__(self,filename):
-        filename = os.path.join(globals.dirs.resource,filename)
+        #filename = os.path.join(globals.dirs.resource,filename)
         if filename not in cache:
             with open(filename,'rb') as f:
                 self.textureSurface = pygame.image.load(f)
@@ -106,7 +106,7 @@ class TextureAtlas(object):
     def __init__(self,image_filename,data_filename):
         self.texture = Texture(image_filename)
         self.subimages = {}
-        data_filename = os.path.join(globals.dirs.resource,data_filename)
+        #data_filename = os.path.join(globals.dirs.resource,data_filename)
         with open(data_filename,'rb') as f:
             for line in f:
                 subimage_name,\
@@ -191,7 +191,7 @@ class TextManager(object):
     def __init__(self):
         #fontname,fontdataname = (os.path.join('fonts',name) for name in ('pixelmix.png','pixelmix.txt'))
         #self.atlas = TextureAtlas(fontname,fontdataname)
-        self.atlas = PetsciiAtlas(os.path.join('fonts','petscii.png'))
+        self.atlas = PetsciiAtlas('petscii.png')
         self.font_height = max(subimage.size.y for subimage in self.atlas.subimages.values())
         self.quads = quads.QuadBuffer(131072) #these are reclaimed when out of use so this means 131072 concurrent chars
         TextTypes.BUFFER = {TextTypes.SCREEN_RELATIVE : self.quads,
