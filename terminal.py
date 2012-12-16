@@ -613,3 +613,23 @@ class FinalChallengeTerminal(Emulator):
                 
     def GetCode(self):
         return self.code
+
+class NaughtyListTerminal(Emulator):
+    Banner = 'Welcome to the Hallowed Nice-or-Naughty List Computer\nCommands are read, print, delete or help'
+    code = """[REDACTED]"""
+
+    def Dispatch(self,command):
+        if command == 'read':
+            self.AddMessage('There are 7 billion names on this list. It is too large to read')
+        elif command == 'print':
+            self.AddMessage('Now printing in the main office. I hope you have enough paper!')
+        elif command == 'delete':
+            self.AddMessage('Happy new year! Naughty list now deleted')
+            #Do end things
+        else:# command == 'help':
+            if command != 'help':
+                self.AddMessage('Unknown command %s' % command)
+            self.AddMessage(self.Banner)
+                
+    def GetCode(self):
+        return self.code

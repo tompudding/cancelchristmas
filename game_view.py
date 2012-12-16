@@ -109,7 +109,7 @@ class TileTypes:
     NAUGHTY_LIST      = 15
 
     Doors      = set((DOOR_CLOSED,DOOR_OPEN))
-    Computers  = set((PIN_ENTRY,DISGUISED_PIN,OVERFLOW_INTO_PIN,SQL_INJECTION,INTEGER_OVERFLOW,FINAL_CHALLENGE,KEYWORD))
+    Computers  = set((PIN_ENTRY,DISGUISED_PIN,OVERFLOW_INTO_PIN,SQL_INJECTION,INTEGER_OVERFLOW,FINAL_CHALLENGE,KEYWORD,NAUGHTY_LIST))
     Impassable = set((WALL,DOOR_CLOSED,SWITCH)) | Computers
 
 class TileData(object):
@@ -219,7 +219,7 @@ terminals = {TileTypes.PIN_ENTRY         : terminal.GrotoEntryTerminal,
              TileTypes.SQL_INJECTION     : terminal.SqlInjectionTerminal,
              TileTypes.INTEGER_OVERFLOW  : terminal.IntegerOverflowTerminal,
              TileTypes.FINAL_CHALLENGE   : terminal.FinalChallengeTerminal,
-             TileTypes.NAUGHTY_LIST      : terminal.DisguisedPinTerminal,
+             TileTypes.NAUGHTY_LIST      : terminal.NaughtyListTerminal,
              TileTypes.KEYWORD           : terminal.KeywordTerminal}
 
 def TileDataFactory(map,type,pos):
