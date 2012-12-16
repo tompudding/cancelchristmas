@@ -116,7 +116,11 @@ class Emulator(ui.UIElement):
         #print 'Got command : ',command
         pass
 
-    def AddMessage(self,message):
+    def AddMessage(self,message,fail = None):
+        if fail == True:
+            globals.sounds.access_denied.play()
+        elif fail == False:
+            globals.sounds.access_granted.play()
         for char in '\n' + message + '\n':
             if char == '\n':
                 key = pygame.K_RETURN
@@ -193,6 +197,8 @@ class Emulator(ui.UIElement):
         self.FlashOn()
 
     def AddKey(self,key,userInput = True):
+        if userInput:
+            random.choice(globals.sounds.typing_sounds).play()
         if self.mode == Modes.VIEW:
             self.ViewAddKey(key)
             return
@@ -268,11 +274,11 @@ while True:
 
     def Dispatch(self,command):
         if command == self.pin:
-            self.AddMessage(self.success_message)
+            self.AddMessage(self.success_message,fail = False)
             #open the door
             self.door.Toggle()
         else:
-            self.AddMessage(self.fail_message)
+            self.AddMessage(self.fail_message,fail = True)
 
     def GetCode(self):
         return self.code.format(pin = self.pin)
@@ -399,10 +405,10 @@ username:\\n");
             correct_pin = ''.join(correct_pin)
             print pin,correct_pin
             if pin == correct_pin:
-                self.AddMessage('Correct!')
+                self.AddMessage('Access granted',fail = False)
                 self.door.Toggle()
             else:
-                self.AddMessage('Incorrect!')
+                self.AddMessage('Access denied',fail = True)
             self.AddMessage(self.Banner)
             self.state = self.States.ENTER_NAME                
 
@@ -490,10 +496,10 @@ int main(void) {
                 return
 
             if index == 0:
-                self.AddMessage('Access Granted')
+                self.AddMessage('Access Granted',fail = False)
                 self.door.Toggle()
             else:
-                self.AddMessage('Access denied')
+                self.AddMessage('Access denied',fail = True)
 
         finally:
             self.AddMessage(self.Banner)
@@ -576,7 +582,7 @@ class SqlInjectionTerminal(Emulator):
                         name,password = result
                         results.append((name,password))
                 except sqlite3.Error as e:
-                    self.AddMessage('Error with UID',str(e))
+                    self.AddMessage('Error with UID' % str(e),fail = True)
                     self.AddMessage(self.Banner)
                     return
             if results == []:
@@ -589,10 +595,10 @@ class SqlInjectionTerminal(Emulator):
         elif self.state == self.States.ENTER_PASS:
             password = command
             if password.lower() == self.password.lower():
-                self.AddMessage('Access Granted')
+                self.AddMessage('Access Granted',fail = False)
                 self.door.Toggle()
             else:
-                self.AddMessage('Access Denied')
+                self.AddMessage('Access Denied',fail = True)
             self.AddMessage(self.Banner)
             self.state = self.States.ENTER_UID                
                 
@@ -606,10 +612,10 @@ class FinalChallengeTerminal(Emulator):
     def Dispatch(self,command):
         try:
             if command.lower() == globals.final_password.lower():
-                self.AddMessage('Access Granted')
+                self.AddMessage('Access Granted',fail = False)
                 self.door.Toggle()
             else:
-                self.AddMessage('Access denied')
+                self.AddMessage('Access denied',fail = True)
         finally:
             self.AddMessage(self.Banner)
                 
