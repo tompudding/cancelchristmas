@@ -278,7 +278,7 @@ class GameMap(object):
         self.switches = []
         self.player = None
         y = self.size.y - 1
-        with open(os.path.join(globals.dirs.maps,name)) as f:
+        with open(name) as f:
             for line in f:
                 line = line.strip('\n')
 
