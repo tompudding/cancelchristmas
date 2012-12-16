@@ -3,6 +3,7 @@ import pygame
 import ui,globals
 import drawing
 import game_view
+import sounds
 from globals.types import Point
 
 def Init():
@@ -18,7 +19,7 @@ def Init():
     globals.mouse_relative_buffer = drawing.QuadBuffer(1024)
     globals.tile_scale            = Point(4,4)
     globals.tile_dimensions       = Point(16,16)*globals.tile_scale
-    #globals.sounds                = sounds.Sounds()
+    globals.sounds                = sounds.Sounds()
 
     globals.dirs = globals.types.Directories('resource')
 

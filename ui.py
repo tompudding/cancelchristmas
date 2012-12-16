@@ -394,6 +394,10 @@ class Box(UIElement):
             self.quad.Enable()
         super(Box,self).Enable()
 
+    def SetColour(self,colour):
+        self.colour = colour
+        self.quad.SetColour(self.colour)
+
     def MakeSelectable(self):
         super(Box,self).MakeSelectable()
         self.quad.SetColour(self.colour)

@@ -5,6 +5,7 @@ import ui,globals,drawing,os,copy
 from globals.types import Point
 import actors
 import terminal
+import modes
 
 class Viewpos(object):
     follow_threshold = 0
@@ -327,14 +328,20 @@ class GameView(ui.RootElement):
         self.text.Disable()
         self.switch_text.Disable()
         self.computer = None
+        self.mode = modes.Titles(self)
         super(GameView,self).__init__(Point(0,0),Point(*self.map.world_size))
 
     def Draw(self):
         drawing.ResetState()
         drawing.Translate(-self.viewpos.pos.x,-self.viewpos.pos.y,0)
         drawing.DrawAll(globals.quad_buffer,self.atlas.texture.texture)
+
+        drawing.DrawAll(globals.nonstatic_text_buffer,globals.text_manager.atlas.texture.texture)
         
     def Update(self,t):
+        if self.mode:
+            self.mode.Update(t)
+
         if self.computer:
             return self.computer.Update(t)
             
@@ -362,32 +369,10 @@ class GameView(ui.RootElement):
 
     def CloseScreen(self):
         self.computer = None
-
+        
     def KeyDown(self,key):
-        if self.computer:
-            return self.computer.KeyDown(key)
-        if key in self.direction_amounts:
-            self.player_direction += self.direction_amounts[key]
+        self.mode.KeyDown(key)
 
     def KeyUp(self,key):
-        if self.computer:
-            return self.computer.KeyUp(key)
-        if key in self.direction_amounts:
-            self.player_direction -= self.direction_amounts[key]
-        elif key == pygame.K_ESCAPE:
-            raise globals.types.FatalError('quit')
+        self.mode.KeyUp(key)
 
-        elif key == pygame.K_p:
-            for door in self.map.doors:
-                door.Toggle()
-            
-        elif key == pygame.K_SPACE:
-            computer = self.map.player.AdjacentComputer()
-            if computer:
-                self.text.Disable()
-                computer.screen.Enable()
-                computer.SetScreen(self)
-                self.computer = computer
-            switch = self.map.player.AdjacentSwitch()
-            if switch:
-                switch.Toggle()

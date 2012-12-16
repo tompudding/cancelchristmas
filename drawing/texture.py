@@ -178,7 +178,7 @@ class TextTypes:
     CUSTOM          = 4
     LEVELS          = {SCREEN_RELATIVE : constants.DrawLevels.text,
                        CUSTOM          : constants.DrawLevels.text,
-                       GRID_RELATIVE   : constants.DrawLevels.grid + 0.1,
+                       GRID_RELATIVE   : constants.DrawLevels.ui + 0.1,
                        MOUSE_RELATIVE  : constants.DrawLevels.text}         
 
 class TextAlignments:
