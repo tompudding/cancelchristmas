@@ -2,6 +2,7 @@ from OpenGL.GL import *
 import random,numpy,cmath,math,pygame
 import hashlib
 import string
+import sqlite3
 
 import ui,globals,drawing,os,copy
 from globals.types import Point
@@ -274,14 +275,14 @@ while True:
         return self.code.format(pin = self.pin)
             
 class DisguisedPinTerminal(GrotoEntryTerminal):
-    code = """terminal.write("{banner}")
+    code = """print("{banner})"
 while True:
-    pin = terminal.GetLine()
+    pin = raw_input()
     if ((pin*77)+1435)%385680 == '{pin}':
-        terminal.write("{success}")
+        print("{success}")
         door.open()
     else:
-        terminal.write("{fail}")
+        print("{fail}")
 """.format(banner  = GrotoEntryTerminal.Banner,
            success = GrotoEntryTerminal.success_message,
            fail    = GrotoEntryTerminal.fail_message,
@@ -414,10 +415,10 @@ class IntegerOverflowTerminal(Emulator):
 
 #define ACCESS_GRANTED 0x584d4153
 #define ACCESS_DENIED  0
-#define NUM_ELVES 200
+#define NUM_ELVES 8
 
 // There are 200 elves working at the grotto,
-// with UIDs ranging from 1 - 200
+// with UIDs ranging from 1 - 8
 // Santa has UID the special UID 0
 // Store a table with their permissions for this door. 
 
@@ -425,7 +426,7 @@ class IntegerOverflowTerminal(Emulator):
 
 int main(void) {
 
-    uint32_t permissions[200 + 1] = {0}; //Extra is for Santa
+    uint32_t permissions[8 + 1] = {0}; //Extra is for Santa
     char buffer[16] = {0};
     uint32_t uid;
 
@@ -481,7 +482,7 @@ int main(void) {
                 self.AddMessage('Nice try elf, Santa does not use computers!')
                 return
             index = (uid*4)&0xffffffff
-            if index > (200*4):
+            if index > (8*4):
                 self.AddMessage('Segfault detected, restarted')
                 return
 
@@ -493,6 +494,104 @@ int main(void) {
 
         finally:
             self.AddMessage(self.Banner)
+                
+    def GetCode(self):
+        return self.code
+
+def RandomPassword():
+    return ''.join(random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in xrange(5))
+
+class SqlInjectionTerminal(Emulator):
+    """ Think something like [' and '0'='1'; SELECT Password,Name from Passwords Where Uid='0] for UID"""
+    Banner = 'Welcome to Market Research. Please enter your UID'
+    code = """while True:
+  print 'Welcome to Market Research. Enter your UID:'
+  uid = raw_input()
+  with con:
+    cur = con.cursor()
+    try:
+      #Mrs Claus keeps insisting that this is vulnerable to an 
+      #SQL injection attack. Nag Nag Nag.
+      command = "SELECT Name,Password from Passwords WHERE UID = '%s'" % uid
+      results = database.execute(command)
+    except error as e:
+      print 'Error with UID',str(e)
+    if results == None:
+      print 'No such UID'
+
+    name,password = results[0]
+    print 'Greetings %s, what is your password?' % (name)
+    given_password = raw_input()
+    if given_password == password:
+      print 'Access granted'
+      door.toggle()
+    else:
+      print 'Access denied'
+"""
+    class States:
+        ENTER_UID  = 0
+        ENTER_PASS = 1
+    def __init__(self,*args,**kwargs):
+        self.state = self.States.ENTER_UID
+        self.con = sqlite3.connect(':memory:')
+        data = (
+            (0, 'Santa'      , RandomPassword()),
+            (1, 'Mrs Claus'  , RandomPassword()),
+            (2, 'Gingerbread', RandomPassword()),
+            (3, 'Eggnog'     , RandomPassword()),
+            (4, 'Sugarplum'  , RandomPassword()),
+            (5, 'Dudley'     , RandomPassword()),
+            (6, 'Ferrel'     , RandomPassword()),
+            (7, 'Jingle'     , RandomPassword()),
+            (8, 'Holly'      , RandomPassword())
+            )
+        with self.con:
+            cur = self.con.cursor()
+            cur.execute('CREATE TABLE Passwords(Uid INT, Name TEXT, Password TEXT)')
+            cur.executemany('INSERT INTO Passwords VALUES(?,?,?)',data)
+
+        super(SqlInjectionTerminal,self).__init__(*args,**kwargs)
+
+    def Dispatch(self,command):
+        if self.state == self.States.ENTER_UID:
+            results = []
+            with self.con:
+                #Sqlite quite sensibly limits execute to only one statement, so simulate 
+                #a more dodgy database by allowing them. Sqlite would still be vulnerable
+                #to a blind injection attack on the passwords, but that would be too hard
+                #for this game. Left as an exercise for the reader!
+                cur = self.con.cursor()
+                self.uid = command
+                command = "SELECT Name,Password from Passwords WHERE UID = '%s'" % self.uid
+                commands = command.split(';')
+                try:
+                    for command in commands:
+                        cur.execute(command)
+                        result = cur.fetchone()
+                        if result == None:
+                            continue
+                        name,password = result
+                        results.append((name,password))
+                except sqlite3.Error as e:
+                    self.AddMessage('Error with UID',str(e))
+                    self.AddMessage(self.Banner)
+                    return
+            if results == []:
+                self.AddMessage('No such UID')
+                return
+            self.name,self.password = results[0]
+            self.state = self.States.ENTER_PASS
+            self.AddMessage('Greetings %s, what is your password?' % self.name)
+            return
+        elif self.state == self.States.ENTER_PASS:
+            password = command
+            if password.lower() == self.password.lower():
+                self.AddMessage('Access Granted')
+                self.door.Toggle()
+            else:
+                self.AddMessage('Access Denied')
+            self.AddMessage(self.Banner)
+            self.state = self.States.ENTER_UID                
                 
     def GetCode(self):
         return self.code
