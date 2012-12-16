@@ -198,6 +198,8 @@ class Emulator(ui.UIElement):
 
     def AddKey(self,key,userInput = True):
         if userInput:
+            for sound in globals.sounds.typing_sounds:
+                sound.stop()
             random.choice(globals.sounds.typing_sounds).play()
         if self.mode == Modes.VIEW:
             self.ViewAddKey(key)
