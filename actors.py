@@ -4,6 +4,7 @@ import ui
 import drawing
 import os
 import game_view
+import random
 
 class Directions:
     UP    = 0
@@ -15,6 +16,7 @@ class Actor(object):
     texture = None
     width = None
     height = None
+    sounds = None
     def __init__(self,map,pos):
         self.map  = map
         self.dirsa = ((Directions.UP   ,'back' ),
@@ -35,6 +37,7 @@ class Actor(object):
         self.size = Point(float(self.width)/16,float(self.height)/16)
         self.corners = Point(0,0),Point(self.size.x,0),Point(0,self.size.y),self.size
         self.SetPos(pos)
+        self.current_sound = None
 
     def SetPos(self,pos):
         self.pos = pos
@@ -85,6 +88,12 @@ class Actor(object):
 
     def GetPos(self):
         return self.pos
+    
+    def Converse(self):
+        if self.current_sound:
+            self.current_sound.stop()
+        self.current_sound = random.choice(self.sounds)
+        self.current_sound.play()
 
 class Player(Actor):
     texture = 'hacker'
@@ -111,12 +120,29 @@ class Player(Actor):
     def AdjacentSwitch(self):
         return self.AdjacentItem(game_view.Switch)
 
+    def AdjacentActor(self):
+        for actor in self.map.actors:
+            if actor is self:
+                continue
+            if (actor.pos - self.pos).SquareLength() < 2:
+                return actor
+
 class Santa(Actor):
     width = 11
     height = 15
     texture = 'santa'
+    sounds = None
+
+    def __init__(self,*args,**kwargs):
+        self.sounds = globals.sounds.santa_sounds
+        super(Santa,self).__init__(*args,**kwargs)
 
 class Elf(Actor):
     width = 7
     height = 12
     texture = 'elf'
+    sounds = None
+
+    def __init__(self,*args,**kwargs):
+        self.sounds = globals.sounds.elf_sounds
+        super(Elf,self).__init__(*args,**kwargs)

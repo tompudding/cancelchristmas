@@ -224,7 +224,7 @@ class GameOver(Mode):
                 num_enabled = int(self.elapsed/self.letter_duration)
                 self.blurb_text.EnableChars(num_enabled)
                 if not self.played_sound and num_enabled > self.blurb.index('Merry'):
-                    globals.sounds.merrychristmas.play()
+                    globals.sounds.santa_merry.play()
                     self.played_sound = True
             else:
                 self.skipped_text = True
@@ -237,7 +237,7 @@ class GameOver(Mode):
         #if key in [13,27,32]: #return, escape, space
         if not self.skipped_text:
             if not self.played_sound:
-                globals.sounds.merrychristmas.play()
+                globals.sounds.santa_merry.play()
                 self.played_sound = True
             self.SkipText()
         else:
@@ -297,3 +297,7 @@ class GameMode(Mode):
             switch = self.parent.map.player.AdjacentSwitch()
             if switch:
                 switch.Toggle()
+            actor = self.parent.map.player.AdjacentActor()
+            if actor:
+                actor.Converse()
+            

@@ -190,6 +190,7 @@ class Computer(TileData):
 
     def SetScreen(self,parent):
         self.parent   = parent
+        globals.sounds.terminal_on.play()
         if self.terminal == None:
             self.terminal = self.terminal_type(parent     = self.screen,
                                                gameview   = self.parent,
@@ -356,6 +357,16 @@ class GameView(ui.RootElement):
                                pos    = Point(-0.1,-0.2),
                                tr     = Point(1.1,1.2),
                                colour = (0,0,0,0.3))
+        self.actor_text = ui.TextBox(globals.screen_root,
+                               bl = Point(0.15,0.15),
+                               tr = None,
+                               text = 'Press space to words',
+                               scale = 2,
+                               colour = drawing.constants.colours.white)
+        self.actor_text.box = ui.Box(parent = self.actor_text,
+                               pos    = Point(-0.1,-0.2),
+                               tr     = Point(1.1,1.2),
+                               colour = (0,0,0,0.3))
         self.text.Disable()
         self.switch_text.Disable()
         self.computer = None
@@ -401,6 +412,11 @@ class GameView(ui.RootElement):
             self.switch_text.Enable()
         else:
             self.switch_text.Disable()
+
+        if self.map.player.AdjacentActor():
+            self.actor_text.Enable()
+        else:
+            self.actor_text.Disable()
 
     def GameOver(self):
         self.switch_text.Disable()
