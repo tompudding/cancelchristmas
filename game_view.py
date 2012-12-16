@@ -6,6 +6,7 @@ from globals.types import Point
 import actors
 import terminal
 import modes
+import random
 
 class Viewpos(object):
     follow_threshold = 0
@@ -146,6 +147,10 @@ class TileData(object):
             self.name = self.texture_names[type]
         except KeyError:
             self.name = self.texture_names[TileTypes.GRASS]
+        
+        if self.name in ('tile.png','grass.png'):
+            if random.random() > 0.97:
+                self.name = 'candycane_' + self.name
 
         self.quad = drawing.Quad(globals.quad_buffer,tc = globals.atlas.TextureSpriteCoords(self.name))
         bl        = pos * globals.tile_dimensions
@@ -338,8 +343,7 @@ class GameView(ui.RootElement):
         self.player_direction = Point(0,0)
         self.game_over = False
         pygame.mixer.music.load('shitty_music.mp3')
-        pygame.mixer.music.play(-1)
-        self.music_playing = True
+        self.music_playing = False
         self.text = ui.TextBox(globals.screen_root,
                                bl = Point(0.15,0.15),
                                tr = None,
@@ -370,6 +374,15 @@ class GameView(ui.RootElement):
                                pos    = Point(-0.1,-0.2),
                                tr     = Point(1.1,1.2),
                                colour = (0,0,0,0.3))
+        self.text.Disable()
+        self.switch_text.Disable()
+        self.computer = None
+        self.mode = modes.Titles(self)
+        super(GameView,self).__init__(Point(0,0),Point(*self.map.world_size))
+
+    def StartMusic(self):
+        pygame.mixer.music.play(-1)
+        self.music_playing = True
         self.music_text = ui.TextBox(globals.screen_root,
                                bl = Point(0.5,0.02),
                                tr = None,
@@ -380,11 +393,6 @@ class GameView(ui.RootElement):
                                pos    = Point(-0.1,-0.2),
                                tr     = Point(1.1,1.2),
                                colour = (0,0,0,0.9))
-        self.text.Disable()
-        self.switch_text.Disable()
-        self.computer = None
-        self.mode = modes.Titles(self)
-        super(GameView,self).__init__(Point(0,0),Point(*self.map.world_size))
 
     def Draw(self):
         drawing.ResetState()

@@ -73,6 +73,7 @@ class Titles(Mode):
         if self.stage == TitleStages.COMPLETE:
             self.backdrop.Delete()
             self.parent.mode = self.parent.game_mode = GameMode(self.parent)
+            self.parent.StartMusic()
 
     def Startup(self,t):
         self.view_target = Point(self.parent.map.world_size.x*0.5-globals.screen.x*0.5,self.parent.map.world_size.y-globals.screen.y*1)
