@@ -55,7 +55,7 @@ class Emulator(ui.UIElement):
         self.cursor_view  = Point(0,0)
         self.cursor = self.cursor_entry
         self.saved_buffer = []
-        self.shift_transforms = {a:a.upper() for a in 'abcdefghijklmnopqrstuvwxyz'}
+        self.shift_transforms = dict(((a,a.upper()) for a in 'abcdefghijklmnopqrstuvwxyz'))
         self.shift_transforms.update( {'1' : '!',
                                        '2' : '"',
                                        '3' : '#',
