@@ -7,8 +7,9 @@ resource/sprites/door_open.png:resource/tiles_atlas_0.png:64:48.0:16:16
 resource/sprites/grass.png:resource/tiles_atlas_0.png:80:48.0:16:16
 resource/sprites/wall.png:resource/tiles_atlas_0.png:96:48.0:16:16
 resource/sprites/tile.png:resource/tiles_atlas_0.png:112:48.0:16:16
-resource/sprites/santa_front.png:resource/tiles_atlas_0.png:0:33.0:11:15
-resource/sprites/hacker_back.png:resource/tiles_atlas_0.png:11:35.0:9:13
-resource/sprites/hacker_right.png:resource/tiles_atlas_0.png:20:35.0:9:13
-resource/sprites/hacker_left.png:resource/tiles_atlas_0.png:29:35.0:9:13
-resource/sprites/hacker_front.png:resource/tiles_atlas_0.png:38:35.0:9:13
+resource/sprites/tile_computer.png:resource/tiles_atlas_0.png:0:32.0:16:16
+resource/sprites/santa_front.png:resource/tiles_atlas_0.png:16:33.0:11:15
+resource/sprites/hacker_back.png:resource/tiles_atlas_0.png:27:35.0:9:13
+resource/sprites/hacker_right.png:resource/tiles_atlas_0.png:36:35.0:9:13
+resource/sprites/hacker_left.png:resource/tiles_atlas_0.png:45:35.0:9:13
+resource/sprites/hacker_front.png:resource/tiles_atlas_0.png:54:35.0:9:13

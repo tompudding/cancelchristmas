@@ -133,6 +133,8 @@ class TileData(object):
                      TileTypes.SNOWMAN       : 'snowman.png'}
     for t in TileTypes.Computers:
         texture_names[t] = 'wall_computer.png'
+    #keywords look different
+    texture_names[TileTypes.KEYWORD] = 'tile_computer.png'
     def __init__(self,type,pos):
         self.pos  = pos
         self.type = type
