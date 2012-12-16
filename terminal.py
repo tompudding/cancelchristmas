@@ -404,3 +404,95 @@ username:\\n");
 
     def GetCode(self):
         return self.code
+
+class IntegerOverflowTerminal(Emulator):
+    Banner = 'Welcome to Santa\'s Suites. Please enter your UID'
+    code = """#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define ACCESS_GRANTED 0x584d4153
+#define ACCESS_DENIED  0
+#define NUM_ELVES 200
+
+// There are 200 elves working at the grotto,
+// with UIDs ranging from 1 - 200
+// Santa has UID the special UID 0
+// Store a table with their permissions for this door. 
+
+// For reference sizeof(*void) == sizeof(uint32_t) == 4
+
+int main(void) {
+
+    uint32_t permissions[200 + 1] = {0}; //Extra is for Santa
+    char buffer[16] = {0};
+    uint32_t uid;
+
+    //Set all the people who have permission. 
+    //Oh look, it's only Santa
+    permissions[0] = ACCESS_GRANTED;
+
+    while(1) {
+
+        printf("Greetings elf, enter your user id:\\n");
+        
+        fgets(buffer,sizeof(buffer),stdin);
+        //Make sure it's NULL terminated
+        buffer[sizeof(buffer)-1] = '\\0';
+
+        //Convert that number to an int
+        uid = strtoul(buffer,NULL,10);
+        if(ULONG_MAX == uid) {
+            printf("Invalid UID\\n");
+            continue;
+        }
+
+        if(0 == uid) {
+            //This elf is impersonating Santa!
+            printf("Nice try elf, Santa does not use computers!\\n");
+            continue;
+        }
+
+        //Check if they have permission
+        
+        if(ACCESS_GRANTED == permissions[uid]) {
+            printf("Access Granted\\n");
+            toggle_door();
+        }
+        else {
+            printf("Access denied\\n");
+        }
+    }
+}
+"""
+
+    def Dispatch(self,command):
+        try:
+            try:
+                uid = int(command)
+            except ValueError:
+                self.AddMessage('Invalid UID')
+                return
+
+            #mimic the behaviour of strtoul
+            uid = uid&0xffffffff
+            if uid == 0:
+                self.AddMessage('Nice try elf, Santa does not use computers!')
+                return
+            index = (uid*4)&0xffffffff
+            if index > (200*4):
+                self.AddMessage('Segfault detected, restarted')
+                return
+
+            if index == 0:
+                self.AddMessage('Access Granted')
+                self.door.Toggle()
+            else:
+                self.AddMessage('Access denied')
+
+        finally:
+            self.AddMessage(self.Banner)
+                
+    def GetCode(self):
+        return self.code

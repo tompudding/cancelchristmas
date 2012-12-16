@@ -217,7 +217,7 @@ terminals = {TileTypes.PIN_ENTRY         : terminal.GrotoEntryTerminal,
              TileTypes.DISGUISED_PIN     : terminal.DisguisedPinTerminal,
              TileTypes.OVERFLOW_INTO_PIN : terminal.OverflowPinTerminal,
              TileTypes.SQL_INJECTION     : terminal.DisguisedPinTerminal,
-             TileTypes.INTEGER_OVERFLOW  : terminal.DisguisedPinTerminal,
+             TileTypes.INTEGER_OVERFLOW  : terminal.IntegerOverflowTerminal,
              TileTypes.FINAL_CHALLENGE   : terminal.DisguisedPinTerminal,
              TileTypes.NAUGHTY_LIST      : terminal.DisguisedPinTerminal,
              TileTypes.KEYWORD           : terminal.KeywordTerminal}
@@ -289,7 +289,7 @@ class GameMap(object):
                     break
 
 class GameView(ui.RootElement):
-    speed = 6
+    speed = 8
     direction_amounts = {pygame.K_LEFT  : Point(-0.01*speed, 0.00),
                          pygame.K_RIGHT : Point( 0.01*speed, 0.00),
                          pygame.K_UP    : Point( 0.00, 0.01*speed),
