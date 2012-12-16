@@ -106,6 +106,7 @@ class TileTypes:
     INTEGER_OVERFLOW  = 12
     FINAL_CHALLENGE   = 13
     KEYWORD           = 14
+    NAUGHTY_LIST      = 15
 
     Doors      = set((DOOR_CLOSED,DOOR_OPEN))
     Computers  = set((PIN_ENTRY,DISGUISED_PIN,OVERFLOW_INTO_PIN,SQL_INJECTION,INTEGER_OVERFLOW,FINAL_CHALLENGE,KEYWORD))
@@ -218,8 +219,8 @@ terminals = {TileTypes.PIN_ENTRY         : terminal.GrotoEntryTerminal,
              TileTypes.SQL_INJECTION     : terminal.DisguisedPinTerminal,
              TileTypes.INTEGER_OVERFLOW  : terminal.DisguisedPinTerminal,
              TileTypes.FINAL_CHALLENGE   : terminal.DisguisedPinTerminal,
+             TileTypes.NAUGHTY_LIST      : terminal.DisguisedPinTerminal,
              TileTypes.KEYWORD           : terminal.KeywordTerminal}
-
 
 def TileDataFactory(map,type,pos):
     if type in TileTypes.Doors:
@@ -245,6 +246,7 @@ class GameMap(object):
                      '3' : TileTypes.SQL_INJECTION,
                      '4' : TileTypes.INTEGER_OVERFLOW,
                      '5' : TileTypes.FINAL_CHALLENGE,
+                     '6' : TileTypes.NAUGHTY_LIST,
                      'd' : TileTypes.DOOR_CLOSED,
                      'o' : TileTypes.DOOR_OPEN,
                      'k' : TileTypes.KEYWORD,
@@ -305,13 +307,17 @@ class GameView(ui.RootElement):
                                text = 'Press space to computer',
                                scale = 2,
                                colour = drawing.constants.colours.white)
+        self.text.box = ui.Box(parent = self.text,
+                               pos    = Point(-0.1,-0.2),
+                               tr     = Point(1.1,1.2),
+                               colour = (0,0,0,0.3))
         self.switch_text = ui.TextBox(globals.screen_root,
                                bl = Point(0.15,0.15),
                                tr = None,
                                text = 'Press space to activate switch',
                                scale = 2,
                                colour = drawing.constants.colours.white)
-        self.text.box = ui.Box(parent = self.switch_text,
+        self.switch_text.box = ui.Box(parent = self.switch_text,
                                pos    = Point(-0.1,-0.2),
                                tr     = Point(1.1,1.2),
                                colour = (0,0,0,0.3))
