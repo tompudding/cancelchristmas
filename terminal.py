@@ -110,7 +110,8 @@ class Emulator(ui.UIElement):
                 self.quads[x][y].Enable()
 
     def Dispatch(self,command):
-        print 'Got command : ',command
+        #print 'Got command : ',command
+        pass
 
     def AddMessage(self,message):
         for char in '\n' + message + '\n':
@@ -304,7 +305,7 @@ class KeywordTerminal(Emulator):
         super(KeywordTerminal,self).__init__(*args,**kwargs)
 
     def GetCode(self):
-        return ''
+        return 'print("%s")' % self.Banner
 
 class OverflowPinTerminal(Emulator):
     class States:
