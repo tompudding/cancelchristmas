@@ -201,6 +201,12 @@ class Computer(TileData):
     def KeyDown(self,key):
         if key in (pygame.K_ESCAPE,):
             return
+        if key >= pygame.K_KP0 and key <= pygame.K_KP9:
+            key -= (pygame.K_KP0 - pygame.K_0)
+
+        if key in (pygame.K_LSHIFT,pygame.K_RSHIFT):
+            self.terminal.ShiftDown()
+            return
         self.current_key = key
         if key == pygame.K_TAB:
             return
@@ -213,6 +219,8 @@ class Computer(TileData):
             self.parent.CloseScreen()
             if self.terminal.GameOver():
                 self.parent.GameOver()
+        if key in (pygame.K_LSHIFT,pygame.K_RSHIFT):
+            self.terminal.ShiftUp()
         if self.current_key:
             self.current_key = None
 
