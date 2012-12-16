@@ -164,90 +164,88 @@ class Titles(Mode):
     def Draw(self):
         pass
 
-# class GameOver(Mode):
-#     win_text = "Congratulations! You have defeated the dinosaurs, and now you're just a few thousand short millennia away from some tasty {gloop}, Hooray!. Total score = %d\n\n\n   Press any key to exit".format(gloop = gloop_name)
-#     fail_text = "You failed to destroy the dinosaurs, and the universe's last hope of getting a stable {gloop} source is lost. In addition you are dead. Total score = %d\n\n\n   Press any key to exit".format(gloop = gloop_name)
-#     def __init__(self,parent,win,score):
-#         self.parent          = parent
-#         self.win             = win
-#         self.score           = score
-#         self.start           = None
-#         self.skipped_text    = False
-#         self.continued       = False
-#         self.letter_duration = 20
-#         self.blurb           = self.win_text if self.win else self.fail_text
-#         self.blurb           = self.blurb % self.score
-#         self.blurb_text      = None
-#         self.stage           = TitleStages.STARTED
-#         self.handlers        = {TitleStages.STARTED : self.Startup,
-#                                 TitleStages.TEXT    : self.TextDraw,
-#                                 TitleStages.SCROLL  : self.Wait,
-#                                 TitleStages.WAIT    : self.Wait}
-#         self.parent.Pause()
-#         self.parent.ship.Disable()
-#         pygame.mixer.music.load('end_fail.mp3')
-#         pygame.mixer.music.play(-1)
+class GameOver(Mode):
+    win_text = "Santa Claus has some words for you"
+    def __init__(self,parent):
+        self.parent          = parent
+        self.start           = None
+        self.skipped_text    = False
+        self.continued       = False
+        self.letter_duration = 20
+        self.blurb           = self.win_text
+        self.blurb_text      = None
+        self.stage           = TitleStages.STARTED
+        self.handlers        = {TitleStages.STARTED : self.Startup,
+                                TitleStages.TEXT    : self.TextDraw,
+                                TitleStages.SCROLL  : self.Wait,
+                                TitleStages.WAIT    : self.Wait}
+        self.santa_quad = drawing.Quad(globals.backdrop_buffer,tc = globals.atlas.TextureSpriteCoords('santa_front.png'))
+        santa_bl = globals.screen*Point(0.5,0.1)
+        santa_tr = globals.screen*Point(0.9,0.9)
+        self.santa_quad.SetVertices(santa_bl,santa_tr,drawing.constants.DrawLevels.ui+10)
+        #pygame.mixer.music.load('end_fail.mp3')
+        #pygame.mixer.music.play(-1)
 
-#     def Update(self,t):
-#         if self.start == None:
-#             self.start = t
-#         self.elapsed = t - self.start
-#         self.stage = self.handlers[self.stage](t)
-#         if self.stage == TitleStages.COMPLETE:
-#             raise sys.exit('Come again soon!')
+    def Update(self,t):
+        if self.start == None:
+            self.start = t
+        self.elapsed = t - self.start
+        self.stage = self.handlers[self.stage](t)
+        if self.stage == TitleStages.COMPLETE:
+            raise sys.exit('Come again soon!')
 
-#     def Startup(self,t):
-#         self.view_target = Point(self.parent.ship.GetPos().x-globals.screen.x*0.5,globals.screen.y)
-#         self.parent.viewpos.SetTarget(self.view_target,
-#                                       t,
-#                                       rate = 0.4,
-#                                       callback = self.Scrolled)
-#         return TitleStages.WAIT
+    def Startup(self,t):
+        #self.view_target = Point(self.parent.ship.GetPos().x-globals.screen.x*0.5,globals.screen.y)
+        #self.parent.viewpos.SetTarget(self.view_target,
+        #                              t,
+        #                              rate = 0.4,
+        #                              callback = self.Scrolled)
+        return TitleStages.WAIT
 
-#     def Wait(self,t):
-#         return self.stage
+    def Wait(self,t):
+        return self.stage
 
-#     def SkipText(self):
-#         if self.blurb_text:
-#             self.skipped_text = True
-#             self.blurb_text.EnableChars()
+    def SkipText(self):
+        if self.blurb_text:
+            self.skipped_text = True
+            self.blurb_text.EnableChars()
 
-#     def Scrolled(self,t):
-#         bl = self.parent.GetRelative(self.view_target)
-#         tr = bl + self.parent.GetRelative(globals.screen)
-#         self.blurb_text = ui.TextBox(parent = self.parent,
-#                                      bl     = bl         ,
-#                                      tr     = tr         ,
-#                                      text   = self.blurb ,
-#                                      textType = drawing.texture.TextTypes.GRID_RELATIVE,
-#                                      scale  = 3)
+    def Scrolled(self,t):
+        bl = self.parent.GetRelative(self.view_target)
+        tr = bl + self.parent.GetRelative(globals.screen)
+        self.blurb_text = ui.TextBox(parent = self.parent,
+                                     bl     = bl         ,
+                                     tr     = tr         ,
+                                     text   = self.blurb ,
+                                     textType = drawing.texture.TextTypes.GRID_RELATIVE,
+                                     scale  = 3)
 
-#         self.start = t
-#         self.blurb_text.EnableChars(0)
-#         self.stage = TitleStages.TEXT
+        self.start = t
+        self.blurb_text.EnableChars(0)
+        self.stage = TitleStages.TEXT
 
-#     def TextDraw(self,t):
-#         if not self.skipped_text:
-#             if self.elapsed < len(self.blurb_text.text)*self.letter_duration:
-#                 num_enabled = int(self.elapsed/self.letter_duration)
-#                 self.blurb_text.EnableChars(num_enabled)
-#             else:
-#                 self.skipped_text = True
-#         elif self.continued:
-#             return TitleStages.COMPLETE
-#         return TitleStages.TEXT
+    def TextDraw(self,t):
+        if not self.skipped_text:
+            if self.elapsed < len(self.blurb_text.text)*self.letter_duration:
+                num_enabled = int(self.elapsed/self.letter_duration)
+                self.blurb_text.EnableChars(num_enabled)
+            else:
+                self.skipped_text = True
+        elif self.continued:
+            return TitleStages.COMPLETE
+        return TitleStages.TEXT
 
 
-#     def KeyDown(self,key):
-#         #if key in [13,27,32]: #return, escape, space
-#         if not self.skipped_text:
-#             self.SkipText()
-#         else:
-#             self.continued = True
+    def KeyDown(self,key):
+        #if key in [13,27,32]: #return, escape, space
+        if not self.skipped_text:
+            self.SkipText()
+        else:
+            self.continued = True
 
-#     def MouseButtonDown(self,pos,button):
-#         self.KeyDown(0)
-#         return False,False
+    def MouseButtonDown(self,pos,button):
+        self.KeyDown(0)
+        return False,False
 
 class GameMode(Mode):
     speed = 8

@@ -207,6 +207,8 @@ class Computer(TileData):
         if key == pygame.K_ESCAPE:
             self.screen.Disable()
             self.parent.CloseScreen()
+            if self.terminal.GameOver():
+                self.parent.GameOver()
         if self.current_key:
             self.current_key = None
 
@@ -308,6 +310,7 @@ class GameView(ui.RootElement):
         self.map.world_size = self.map.size * globals.tile_dimensions
         self.viewpos = Viewpos(Point(0,0))
         self.player_direction = Point(0,0)
+        self.game_over = False
         self.text = ui.TextBox(globals.screen_root,
                                bl = Point(0.15,0.15),
                                tr = None,
@@ -336,14 +339,18 @@ class GameView(ui.RootElement):
 
     def Draw(self):
         drawing.ResetState()
+        drawing.DrawAll(globals.backdrop_buffer,self.atlas.texture.texture)
+        drawing.ResetState()
         drawing.Translate(-self.viewpos.pos.x,-self.viewpos.pos.y,0)
         drawing.DrawAll(globals.quad_buffer,self.atlas.texture.texture)
-
         drawing.DrawAll(globals.nonstatic_text_buffer,globals.text_manager.atlas.texture.texture)
         
     def Update(self,t):
         if self.mode:
             self.mode.Update(t)
+
+        if self.game_over:
+            return
 
         if self.computer:
             return self.computer.Update(t)
@@ -369,6 +376,12 @@ class GameView(ui.RootElement):
             self.switch_text.Enable()
         else:
             self.switch_text.Disable()
+
+    def GameOver(self):
+        self.switch_text.Disable()
+        self.text.Disable()
+        self.game_over = True
+        self.mode = modes.GameOver(self)
 
     def CloseScreen(self):
         self.computer = None

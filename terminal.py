@@ -71,6 +71,9 @@ class Emulator(ui.UIElement):
     def GetBanner(self):
         return self.Banner
 
+    def GameOver(self):
+        return False
+
     def Update(self,t):
         self.t = t
         if self.cursor_flash == None:
@@ -617,14 +620,25 @@ class NaughtyListTerminal(Emulator):
     Banner = 'Welcome to the Hallowed Nice-or-Naughty List Computer\nCommands are read, print, delete or help'
     code = """[REDACTED]"""
 
+    def __init__(self,*args,**kwargs):
+        super(NaughtyListTerminal,self).__init__(*args,**kwargs)
+        self.deleted = False
+
     def Dispatch(self,command):
         if command == 'read':
-            self.AddMessage('There are 7 billion names on this list. It is too large to read')
+            if not self.deleted:
+                self.AddMessage('There are 7 billion names on this list. It is too large to read')
+            else:
+                self.AddMessage('The list contains only one entry : "Mysterious Hacker : Naughty"')
         elif command == 'print':
             self.AddMessage('Now printing in the main office. I hope you have enough paper!')
         elif command == 'delete':
-            self.AddMessage('Happy new year! Naughty list now deleted')
-            #Do end things
+            if not self.deleted:
+                self.AddMessage('Happy new year! Naughty list now deleted. Press ESC to close the terminal')
+                self.deleted = True
+            else:
+                self.AddMessage("It's already deleted. Seriously, just press ESC")
+            
         else:# command == 'help':
             if command != 'help':
                 self.AddMessage('Unknown command %s' % command)
@@ -632,3 +646,6 @@ class NaughtyListTerminal(Emulator):
                 
     def GetCode(self):
         return self.code
+
+    def GameOver(self):
+        return self.deleted
