@@ -276,11 +276,11 @@ class GameMode(Mode):
             self.parent.player_direction += self.direction_amounts[key]
 
     def KeyUp(self,key):
-        if self.parent.computer:
-            return self.parent.computer.KeyUp(key)
         if key in self.direction_amounts and (self.keydownmap & self.keyflags[key]):
             self.keydownmap &= (~self.keyflags[key])
             self.parent.player_direction -= self.direction_amounts[key]
+        if self.parent.computer:
+            return self.parent.computer.KeyUp(key)
         #elif key == pygame.K_ESCAPE:
         #    raise globals.types.FatalError('quit')
 
