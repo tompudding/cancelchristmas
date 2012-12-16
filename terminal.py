@@ -596,3 +596,20 @@ class SqlInjectionTerminal(Emulator):
                 
     def GetCode(self):
         return self.code
+
+class FinalChallengeTerminal(Emulator):
+    Banner = 'Access to the naughty list room is restricted. Enter the password'
+    code = """[REDACTED]"""
+
+    def Dispatch(self,command):
+        try:
+            if command.lower() == globals.final_password.lower():
+                self.AddMessage('Access Granted')
+                self.door.Toggle()
+            else:
+                self.AddMessage('Access denied')
+        finally:
+            self.AddMessage(self.Banner)
+                
+    def GetCode(self):
+        return self.code

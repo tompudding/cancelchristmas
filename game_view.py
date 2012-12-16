@@ -218,7 +218,7 @@ terminals = {TileTypes.PIN_ENTRY         : terminal.GrotoEntryTerminal,
              TileTypes.OVERFLOW_INTO_PIN : terminal.OverflowPinTerminal,
              TileTypes.SQL_INJECTION     : terminal.SqlInjectionTerminal,
              TileTypes.INTEGER_OVERFLOW  : terminal.IntegerOverflowTerminal,
-             TileTypes.FINAL_CHALLENGE   : terminal.DisguisedPinTerminal,
+             TileTypes.FINAL_CHALLENGE   : terminal.FinalChallengeTerminal,
              TileTypes.NAUGHTY_LIST      : terminal.DisguisedPinTerminal,
              TileTypes.KEYWORD           : terminal.KeywordTerminal}
 
