@@ -214,8 +214,8 @@ class Emulator(ui.UIElement):
         self.cursor_flash = self.t
         self.FlashOn()
 
-    def AddKey(self,key,userInput = True):
-        if userInput:
+    def AddKey(self,key,userInput = True,repeat = False):
+        if userInput and not repeat:
             #for sound in globals.sounds.typing_sounds:
             #    sound.stop()
             #print dir(globals.sounds.typing_sounds[0])

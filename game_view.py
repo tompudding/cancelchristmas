@@ -236,7 +236,7 @@ class Computer(TileData):
             self.last_keyrepeat = t+self.initial_key_repeat
             return
         if t - self.last_keyrepeat > self.key_repeat_time:
-            self.terminal.AddKey(self.current_key)
+            self.terminal.AddKey(self.current_key,repeat=True)
             self.last_keyrepeat = t
 
 terminals = {TileTypes.PIN_ENTRY         : terminal.GrotoEntryTerminal,
