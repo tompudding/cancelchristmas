@@ -41,10 +41,10 @@ class Titles(Mode):
         self.letter_duration = 20
         self.blurb_text      = None
         self.stage           = TitleStages.STARTED
-        self.handlers        = {TitleStages.STARTED : self.Startup,
-                                TitleStages.TEXT    : self.TextDraw,
-                                TitleStages.SCROLL  : self.Wait,
-                                TitleStages.WAIT    : self.Wait,
+        self.handlers        = {TitleStages.STARTED  : self.Startup,
+                                TitleStages.TEXT     : self.TextDraw,
+                                TitleStages.SCROLL   : self.Wait,
+                                TitleStages.WAIT     : self.Wait,
                                 TitleStages.COMPLETE : self.Wait}
         self.backdrop        = ui.Box(parent = globals.screen_root,
                                       pos    = Point(0,0),
@@ -146,6 +146,10 @@ class Titles(Mode):
         self.parent.viewpos.Follow(globals.time,self.parent.map.player)
 
     def KeyDown(self,key):
+        if self.parent.viewpos.target and not self.parent.viewpos.follow:
+            if self.backdrop_end:
+                self.backdrop_end = self.backdrop_start + 1
+            self.parent.viewpos.Skip()
         #if key in [13,27,32]: #return, escape, space
         if not self.skipped_text:
             self.SkipText()

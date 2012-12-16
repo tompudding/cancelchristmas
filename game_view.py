@@ -15,6 +15,7 @@ class Viewpos(object):
         self.NoTarget()
         self.follow = None
         self.follow_locked = False
+        self.t = 0
 
     def NoTarget(self):
         self.target        = None
@@ -56,7 +57,15 @@ class Viewpos(object):
     def Get(self):
         return self.pos
 
+    def Skip(self):
+        self.pos = self.target
+        self.NoTarget()
+        if self.callback:
+            self.callback(self.t)
+            self.callback = None
+
     def Update(self,t):
+        self.t = t
         if self.follow:
             if self.follow_locked:
                 self.pos = self.follow.GetPos() - globals.screen*0.5
@@ -293,11 +302,6 @@ class GameMap(object):
                     break
 
 class GameView(ui.RootElement):
-    speed = 8
-    direction_amounts = {pygame.K_LEFT  : Point(-0.01*speed, 0.00),
-                         pygame.K_RIGHT : Point( 0.01*speed, 0.00),
-                         pygame.K_UP    : Point( 0.00, 0.01*speed),
-                         pygame.K_DOWN  : Point( 0.00,-0.01*speed)}
     def __init__(self):
         self.atlas = globals.atlas = drawing.texture.TextureAtlas('tiles_atlas_0.png','tiles_atlas.txt')
         self.map = GameMap('level1.txt')
