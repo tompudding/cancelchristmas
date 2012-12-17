@@ -460,9 +460,10 @@ class IntegerOverflowTerminal(Emulator):
 
 int main(void) {
 
-    uint32_t permissions[8 + 1] = {0}; //Extra is for Santa
+    uint32_t *permissions = malloc((8 + 1)*sizeof(uint32_t) //Extra 1 is for Santa
     char buffer[16] = {0};
     uint32_t uid;
+    memset(permissions,0,(8 + 1)*sizeof(uint32_t));
 
     //Set all the people who have permission. 
     //Oh look, it's only Santa
