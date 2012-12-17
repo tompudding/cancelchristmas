@@ -1,26 +1,73 @@
-It has been pointed out to me that a walkthrough would be helpful for my Ludum Dare entry (http://www.ludumdare.com/compo/ludum-dare-25/?action=preview&uid=12467) to prevent frustration. 
+It has been pointed out to me that a walkthrough would be helpful for my Ludum 
+Dare entry 
+(http://www.ludumdare.com/compo/ludum-dare-25/?action=preview&uid=12467) to 
+prevent frustration. 
 
 1 - This computer has the pin in plaintext in the codeview. Just type it in.
 
-2 - Slightly harder than the first one. You have to rearrange the equation, but the presence of the modulus means that you might have to try a couple. For example, I just ran it and saw the line 
+2 - Slightly harder than the first one. You have to rearrange the equation, but
+the presence of the modulus means that you might have to try a couple. For 
+example, I just ran it and saw the line 
 
   if ((pin*77)+1435)%385680 == 323680:
 
-So I begin the rearrangement by assuming that the value of pin*77+1435 was less than 385680, in which case the modulus operation will have done nothing, and I can ignore it. The answer then is (323680-1435)/77 = 4185. Another time I got the result 199723. If we do the same thing with that, we find that (199734-1435) is not a multiple of 77, so instead we assume that the modulus operation reduced it, and use 199723+385680 instead. That gives the answer of (199723+385680-1435)/77 = 7584. If the modulus had been smaller, then this puzzle would have been a lot more difficult.
+So I begin the rearrangement by assuming that the value of pin*77+1435 was less
+than 385680, in which case the modulus operation will have done nothing, and I 
+can ignore it. The answer then is (323680-1435)/77 = 4185. Another time I got 
+the result 199723. If we do the same thing with that, we find that (199734-1435)
+is not a multiple of 77, so instead we assume that the modulus operation reduced
+it, and use 199723+385680 instead. That gives the answer of 
+(199723+385680-1435)/77 = 7584. If the modulus had been smaller, then this 
+puzzle would have been a lot more difficult.
 
-3 - This is the buffer overflow puzzle (the hint is in a comment). You can overflow into the other fields of the structure. However, you might think that you can do so when it asks for your name, but because immediately after the name is read it fills in the other fields again, doing so does not help you. Instead if you provide a large pin, then it overwrites the correct pin field. Consequently any answer of the form 123451234 will grant entry since digits 6 through 10 overwrite the correct pin, and as long as they are the same as digits 1 through 4 the check is passed
+3 - This is the buffer overflow puzzle (the hint is in a comment). You can 
+overflow into the other fields of the structure. However, you might think that 
+you can do so when it asks for your name, but because immediately after the name
+is read it fills in the other fields again, doing so does not help you. Instead
+if you provide a large pin, then it overwrites the correct pin field. 
+Consequently any answer of the form 123451234 will grant entry since digits 6 
+through 10 overwrite the correct pin, and as long as they are the same as 
+digits 1 through 4 the check is passed.
 
-4 - SQL injection. There are a few ways to solve this, but the trick is providing an input that causes the query to return no results, and then appending a second query that provides results in a form you can use. For example if for uid you type:
+4 - SQL injection. There are a few ways to solve this, but the trick is 
+providing an input that causes the query to return no results, and then 
+appending a second query that provides results in a form you can use. For 
+example if for uid you type:
 
  '; select name,name from passwords; --
 
 then the full query will be:
 
-select name,password from passwords where uid=''; select name,name from passwords; -- '
+select name,password from passwords where uid=''; select name,name from 
+passwords; -- '
 
-The first of those queries will return no results, so the second query will return all the entries, but with name for both username and password. It will then greet you with the name of a user, which you can then type back in as the password and you will be granted access. The -- marks the start of an SQL comment and allows the remainder to be invalid without breaking the statement. There are many different ways to solve this though, you can even read out the names and passwords of all the users by systematically querying increasing uids
+The first of those queries will return no results, so the second query will 
+return all the entries, but with name for both username and password. It will 
+then greet you with the name of a user, which you can then type back in as the 
+password and you will be granted access. The -- marks the start of an SQL 
+comment and allows the remainder to be invalid without breaking the statement. 
+There are many different ways to solve this though, you can even read out the 
+names and passwords of all the users by systematically querying increasing uids
 
-5 - Integer overflow. This is probably the hardest one, and it has stumped the most people. It's pretty easy to spot that the uid is not bounds checked, and you can read off the end of the buffer. However the environment I was simulating has the permissions table was supposed to be off in its own globals section, and you don't know where anything else is, so it would be impossible to guess what value to enter to access something something without being very lucky. Unfortunately due to a mistake on my part the code listing shows the permissions table as being adjacent to the buffer containing the user input, which might lead people to try and read from it using a value of 10 or so. This won't work, but should do, so I apologize about that. It's fixed in the code, but I believe it's against the rules to fix it in my entry.
+5 - Integer overflow. This is probably the hardest one, and it has stumped the 
+most people. It's pretty easy to spot that the uid is not bounds checked, and 
+you can read off the end of the buffer. However the environment I was simulating
+ has the permissions table was supposed to be off in its own globals section, 
+and you don't know where anything else is, so it would be impossible to guess 
+what value to enter to access something something without being very lucky. 
+Unfortunately due to a mistake on my part the code listing shows the permissions
+ table as being adjacent to the buffer containing the user input, which might 
+lead people to try and read from it using a value of 10 or so. This won't work, 
+but should do, so I apologize about that. It's fixed in the code, but I believe 
+it's against the rules to fix it in my entry.
 
-The intended solution to this puzzle was to realise that the permissions table is an array of 4 byte values, so indexing it with a value n actually reads from the memory address table + n*4. Since pointers are 32 on this platform, if n*4 mod 2**32 == 0, then it will index the start of the array, which has the ACCESS_GRANTED entry in it. Two such values that have that property are 2**30 and 2**31, which are 1073741824 and 2147483648 in decimal. Either one should grant access. Note that you can't use the value 2**32, because it is too big to store in the uint32_t type, so it's equivalent to typing in 0 which is checked for.
+The intended solution to this puzzle was to realise that the permissions table 
+is an array of 4 byte values, so indexing it with a value n actually reads from
+the memory address table + n*4. Since pointers are 32 on this platform, if n*4 
+mod 2**32 == 0, then it will index the start of the array, which has the 
+ACCESS_GRANTED entry in it. Two such values that have that property are 2**30 
+and 2**31, which are 1073741824 and 2147483648 in decimal. Either one should 
+grant access. Note that you can't use the value 2**32, because it is too big 
+to store in the uint32_t type, so it's equivalent to typing in 0 which is 
+checked for.
 
