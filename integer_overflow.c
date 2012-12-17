@@ -7,9 +7,10 @@
 #define ACCESS_DENIED  0
 #define NUM_ELVES 200
 
-//There are 200 elves working at the grotto. with UIDs ranging from 1 - 200
-//Santa has UID the special UID 0
-//Store a table with their permissions for this door. 
+/* There are 200 elves working at the grotto,
+ * with UIDs ranging from 1 - 200
+ * Santa has UID the special UID 0
+ * Store a table with their permissions for this door. */
 
 #define toggle_door(x)
 
@@ -20,7 +21,8 @@ int main(void) {
     char buffer[16] = {0};
     uint32_t uid;
 
-    //Set all the people have permission. Oh look, only Santa has permission
+    //Set all the people have permission. 
+    //Oh look, only Santa has permission
     permissions[0] = ACCESS_GRANTED;
 
     while(1) {

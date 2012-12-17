@@ -429,7 +429,6 @@ username:\\n");
             for i,c in enumerate(command[5:9]):
                 correct_pin[i] = c
             correct_pin = ''.join(correct_pin)
-            print pin,correct_pin
             if pin == correct_pin:
                 self.AddMessage('Access granted',fail = False)
                 self.door.Toggle()

@@ -29,3 +29,4 @@ Mac OS
 Install python,pygame,pyOpenGL and numpy however you can (maybe ports or some such?), then proceed as per the linux instructions
 
 Enjoy!
+
