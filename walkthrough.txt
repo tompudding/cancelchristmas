@@ -29,6 +29,8 @@ Consequently any answer of the form 123451234 will grant entry since digits 6
 through 10 overwrite the correct pin, and as long as they are the same as 
 digits 1 through 4 the check is passed.
 
+This kind of overflow is known as an application-specific buffer overflow. You might have been tempted to try a traditional stack overflow and overwrite the return address of the funtion, however the function never returns! 
+
 4 - SQL injection. There are a few ways to solve this, but the trick is 
 providing an input that causes the query to return no results, and then 
 appending a second query that provides results in a form you can use. For 
@@ -51,23 +53,24 @@ names and passwords of all the users by systematically querying increasing uids
 
 5 - Integer overflow. This is probably the hardest one, and it has stumped the 
 most people. It's pretty easy to spot that the uid is not bounds checked, and 
-you can read off the end of the buffer. However the environment I was simulating
- has the permissions table was supposed to be off in its own globals section, 
-and you don't know where anything else is, so it would be impossible to guess 
-what value to enter to access something something without being very lucky. 
-Unfortunately due to a mistake on my part the code listing shows the permissions
- table as being adjacent to the buffer containing the user input, which might 
-lead people to try and read from it using a value of 10 or so. This won't work, 
-but should do, so I apologize about that. It's fixed in the code, but I believe 
-it's against the rules to fix it in my entry.
+you can read off the end of the buffer. However the permissions table is stored
+on the heap, and though technically on a real machine it might be possible to 
+get lucky and guess the distance between the the heap and the stack, it's not 
+practical on most platforms and it won't work here.
 
 The intended solution to this puzzle was to realise that the permissions table 
 is an array of 4 byte values, so indexing it with a value n actually reads from
-the memory address table + n*4. Since pointers are 32 on this platform, if n*4 
-mod 2**32 == 0, then it will index the start of the array, which has the 
-ACCESS_GRANTED entry in it. Two such values that have that property are 2**30 
-and 2**31, which are 1073741824 and 2147483648 in decimal. Either one should 
-grant access. Note that you can't use the value 2**32, because it is too big 
+the memory address (table + n*4). Since pointers are 32 on this platform, if n*4
+overflows and wraps round, (i,e n*4 mod 2**32 == 0), then it will index the 
+start of the array, which has the ACCESS_GRANTED entry in it. Since n is 4, this
+wrap around happens every (2**32)/4 or 2**30 times, so either 1,2 or 3 times 
+2**30 will work as answers to this stage. In decimal, those answers are:
+
+1073741824
+2147483648
+3221225472
+
+Note that you can't use the value 2**32, because it is too big 
 to store in the uint32_t type, so it's equivalent to typing in 0 which is 
 checked for.
 
