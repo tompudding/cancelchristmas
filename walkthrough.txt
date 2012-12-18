@@ -29,7 +29,9 @@ Consequently any answer of the form 123451234 will grant entry since digits 6
 through 10 overwrite the correct pin, and as long as they are the same as 
 digits 1 through 4 the check is passed.
 
-This kind of overflow is known as an application-specific buffer overflow. You might have been tempted to try a traditional stack overflow and overwrite the return address of the funtion, however the function never returns! 
+This kind of overflow is known as an application-specific buffer overflow. You 
+might have been tempted to try a traditional stack overflow and overwrite the 
+return address of the funtion, however the function never returns! 
 
 4 - SQL injection. There are a few ways to solve this, but the trick is 
 providing an input that causes the query to return no results, and then 
