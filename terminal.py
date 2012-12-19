@@ -607,7 +607,7 @@ class SqlInjectionTerminal(Emulator):
                             continue
                         name,password = result
                         results.append((name,password))
-                except sqlite3.Error as e:
+                except (sqlite3.Error,ValueError) as e:
                     self.AddMessage('Error with UID %s' % str(e),fail = True)
                     self.AddMessage(self.Banner)
                     return
