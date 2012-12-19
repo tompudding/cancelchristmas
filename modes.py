@@ -281,13 +281,7 @@ class GameMode(Mode):
             self.parent.player_direction -= self.direction_amounts[key]
         if self.parent.computer:
             return self.parent.computer.KeyUp(key)
-        #elif key == pygame.K_ESCAPE:
-        #    raise globals.types.FatalError('quit')
 
-        elif key == pygame.K_p:
-            for door in self.parent.map.doors:
-                door.Toggle()
-            
         elif key == pygame.K_SPACE:
             computer = self.parent.map.player.AdjacentComputer()
             if computer:
