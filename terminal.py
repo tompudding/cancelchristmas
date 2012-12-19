@@ -27,7 +27,6 @@ class Emulator(ui.UIElement):
         self.scale = 2
         self.gameview = gameview
         self.computer = computer
-        self.shift = None
         # find my door
         doors = [door for door in self.gameview.map.doors]
         doors.sort(lambda x,y:cmp((x.pos - self.computer.pos).SquareLength(),(y.pos - self.computer.pos).SquareLength()))
@@ -55,17 +54,6 @@ class Emulator(ui.UIElement):
         self.cursor_view  = Point(0,0)
         self.cursor = self.cursor_entry
         self.saved_buffer = []
-        self.shift_transforms = dict(((a,a.upper()) for a in 'abcdefghijklmnopqrstuvwxyz'))
-        self.shift_transforms.update( {'1' : '!',
-                                       '2' : '"',
-                                       '3' : '#',
-                                       '4' : '$',
-                                       '5' : '%',
-                                       '6' : '^',
-                                       '7' : '&',
-                                       '8' : '*',
-                                       '9' : '(',
-                                       '0' : ')'} )
 
         self.text = ui.TextBox(self,
                                bl = Point(0.15,-0.14),
@@ -85,12 +73,6 @@ class Emulator(ui.UIElement):
 
     def GameOver(self):
         return False
-
-    def ShiftDown(self):
-        self.shift = True
-
-    def ShiftUp(self):
-        self.shift = False
 
     def Update(self,t):
         self.t = t
@@ -255,10 +237,6 @@ class Emulator(ui.UIElement):
             key = chr(key)
         except ValueError:
             return
-
-        if self.shift:
-            if key in self.shift_transforms:
-                key = self.shift_transforms[key]
 
         if not globals.text_manager.HasKey(key):
             return

@@ -62,7 +62,14 @@ def main():
                 done = True
                 break
             elif (event.type == pygame.KEYDOWN):
-                globals.current_view.KeyDown(event.key)
+                key = event.key
+                try:
+                    #Try to use the unicode field instead. If it doesn't work for some reason,
+                    #use the old value
+                    key = ord(event.unicode)
+                except (TypeError,AttributeError):
+                    pass
+                globals.current_view.KeyDown(key)
             elif (event.type == pygame.KEYUP):
                 globals.current_view.KeyUp(event.key)
             else:
