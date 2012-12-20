@@ -312,7 +312,6 @@ while True:
                 guess = int(command)
             except:
                 raise ValueError
-            print guess,self.target,self.target
             if ((guess*77+1435)%385680) != self.target:
                 raise ValueError
         except ValueError:
