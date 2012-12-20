@@ -597,11 +597,14 @@ class SqlInjectionTerminal(Emulator):
             self.AddMessage('Greetings %s, what is your password?' % self.name)
             return
         elif self.state == self.States.ENTER_PASS:
-            password = command
-            if password.lower() == self.password.lower():
-                self.AddMessage('Access Granted',fail = False)
-                self.door.Toggle()
-            else:
+            try:
+                password = command
+                if password.lower() == self.password.lower():
+                    self.AddMessage('Access Granted',fail = False)
+                    self.door.Toggle()
+                else:
+                    raise ValueError
+            except: #You're not supposed to add generic exceptions, but evil hackers keep breaking my code!
                 self.AddMessage('Access Denied',fail = True)
             self.AddMessage(self.Banner)
             self.state = self.States.ENTER_UID                
