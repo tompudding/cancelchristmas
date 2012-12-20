@@ -301,6 +301,27 @@ while True:
            fail    = GrotoEntryTerminal.fail_message,
            pin     = '{pin}')
 
+    def __init__(self,*args,**kwargs):
+        self.pin = random.randint(0,9999)
+        self.target = (((self.pin*77)+1435)%385680)
+        super(GrotoEntryTerminal,self).__init__(*args,**kwargs)
+
+    def Dispatch(self,command):
+        try:
+            try:
+                guess = int(command)
+            except:
+                raise ValueError
+            print guess,self.target,self.target
+            if ((guess*77+1435)%385680) != self.target:
+                raise ValueError
+        except ValueError:
+            self.AddMessage(self.fail_message,fail = True)
+            return
+        self.AddMessage(self.success_message,fail = False)
+        #open the door
+        self.door.Toggle()
+
     def GetCode(self):
         return self.code.format(pin = ('%d' % (((int(self.pin)*77)+1435)%385680)))
 
