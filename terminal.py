@@ -291,7 +291,7 @@ class DisguisedPinTerminal(GrotoEntryTerminal):
     code = """print("{banner})"
 while True:
     pin = int(raw_input())
-    if ((pin*77)+1435)%385680 == {pin}:
+    if ((pin*77)+1435)%385680 == {{target}}:
         print("{success}")
         door.open()
     else:
@@ -322,7 +322,7 @@ while True:
         self.door.Toggle()
 
     def GetCode(self):
-        return self.code.format(pin = ('%d' % (((int(self.pin)*77)+1435)%385680)))
+        return self.code.format(target = ('%d' % self.target))
 
 positionals = ['st','nd','rd','th','th']
 

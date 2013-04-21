@@ -337,7 +337,7 @@ class GameView(ui.RootElement):
         self.viewpos = Viewpos(Point(0,0))
         self.player_direction = Point(0,0)
         self.game_over = False
-        pygame.mixer.music.load('shitty_music.mp3')
+        pygame.mixer.music.load('shitty_music.ogg')
         self.music_playing = False
         self.text = ui.TextBox(globals.screen_root,
                                bl = Point(0.15,0.15),
