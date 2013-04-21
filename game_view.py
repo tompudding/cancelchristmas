@@ -26,11 +26,12 @@ class Viewpos(object):
         self.start_time    = None
 
     def Set(self,point):
-        self.pos = point
+        self.pos = point.to_int()
         self.NoTarget()
 
     def SetTarget(self,point,t,rate=2,callback = None):
         #Don't fuck with the view if the player is trying to control it
+        rate /= 4.0
         self.follow        = None
         self.follow_start  = 0
         self.follow_locked = False
@@ -66,6 +67,12 @@ class Viewpos(object):
             self.callback = None
 
     def Update(self,t):
+        try:
+            return self.update(t)
+        finally:
+            self.pos = self.pos.to_int()
+
+    def update(self,t):
         self.t = t
         if self.follow:
             if self.follow_locked:
@@ -188,8 +195,8 @@ class Computer(TileData):
         self.terminal = None
         self.terminal_type = terminal_type
         self.screen = ui.Box(parent = globals.screen_root,
-                             pos = Point(0,0.45) + (Point(25,25).to_float()/globals.screen),
-                             tr = Point(1,1) - (Point(25,25).to_float()/globals.screen),
+                             pos = Point(0,0.45) + (Point(6,6).to_float()/globals.screen),
+                             tr = Point(1,1) - (Point(6,6).to_float()/globals.screen),
                              colour = drawing.constants.colours.black)
         self.screen.Disable()
 
@@ -337,7 +344,7 @@ class GameView(ui.RootElement):
         self.viewpos = Viewpos(Point(0,0))
         self.player_direction = Point(0,0)
         self.game_over = False
-        pygame.mixer.music.load('shitty_music.ogg')
+        pygame.mixer.music.load('music.ogg')
         self.music_playing = False
         self.text = ui.TextBox(globals.screen_root,
                                bl = Point(0.15,0.15),

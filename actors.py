@@ -43,6 +43,8 @@ class Actor(object):
         self.pos = pos
         bl = pos * globals.tile_dimensions
         tr = bl + (globals.tile_scale*Point(self.width,self.height))
+        bl = bl.to_int()
+        tr = tr.to_int()
         self.quad.SetVertices(bl,tr,1)
 
     def Move(self,amount):

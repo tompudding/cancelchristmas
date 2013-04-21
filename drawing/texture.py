@@ -15,7 +15,7 @@ import sprite
 from globals.types import Point
 
 cache = {}
-global_scale = 1
+global_scale = 0.25
 
 class Texture(object):
     """ Load a file into a gltexture and store that texture for later use """

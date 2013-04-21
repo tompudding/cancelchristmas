@@ -19,7 +19,7 @@ class Emulator(ui.UIElement):
     cursor_char     = chr(0x9f)
     cursor_interval = 500
     def __init__(self,parent,gameview,computer,background,foreground):
-        bl = Point(50,50).to_float()/parent.absolute.size
+        bl = Point(13,13).to_float()/parent.absolute.size
         tr = (Point(1,1) - bl)
         super(Emulator,self).__init__(parent,bl,tr)
         self.background_colour = background
