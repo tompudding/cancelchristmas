@@ -231,7 +231,8 @@ class Emulator(ui.UIElement):
             c = Point(self.cursor.x,self.cursor.y)
             self.AddKey(ord(' '),userInput)
             self.current_buffer.pop() #remove the space we just added
-            self.cursor = c
+            self.cursor.x = c.x
+            self.cursor.y = c.y
             return
         try:
             key = chr(key)
