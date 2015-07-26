@@ -184,8 +184,8 @@ class GameOver(Mode):
                                       tr     = Point(1,1),
                                       colour = (0,0,0,0.6))
         self.santa_quad = drawing.Quad(globals.backdrop_buffer,tc = globals.atlas.TextureSpriteCoords('santa_front.png'))
-        santa_bl = globals.screen*Point(0.5,0.1)
-        santa_tr = globals.screen*Point(0.9,0.9)
+        santa_bl = globals.screen_abs*Point(0.5,0.1)
+        santa_tr = globals.screen_abs*Point(0.9,0.9)
         self.santa_quad.SetVertices(santa_bl,santa_tr,drawing.constants.DrawLevels.ui+10)
         bl = Point(0.05,0.1)
         tr = Point(0.55,0.8)
@@ -194,7 +194,7 @@ class GameOver(Mode):
                                      tr     = tr         ,
                                      text   = self.blurb ,
                                      textType = drawing.texture.TextTypes.SCREEN_RELATIVE,
-                                     scale  = 3)
+                                     scale  = 12)
 
         self.start = None
         self.blurb_text.EnableChars(0)
