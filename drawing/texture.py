@@ -17,7 +17,7 @@ from globals.types import Point
 cache = {}
 global_scale = 0.25
 
-class Texture(object):
+class TextureImage(object):
     """ Load a file into a gltexture and store that texture for later use """
     def __init__(self,filename):
         #filename = os.path.join(globals.dirs.resource,filename)
@@ -28,6 +28,7 @@ class Texture(object):
 
             self.width  = self.textureSurface.get_width()
             self.height = self.textureSurface.get_height()
+            self.size = Point(self.width,self.height)
 
             self.texture = glGenTextures(1)
             cache[filename] = (self.texture,self.width,self.height)
@@ -39,55 +40,30 @@ class Texture(object):
             self.texture,self.width,self.height = cache[filename]
             glBindTexture(GL_TEXTURE_2D, self.texture)
 
-class RenderTarget(object):
-    """ 
-    Create a texture for rendering onto. Call Target on the object, do some rendering, then call
-    detarget. Hey presto, self.texture is now a texture containing that drawing!
-    """
-    def __init__(self,x,y,screensize):
-        self.fbo = glGenFramebuffers(1)
-        self.depthbuffer = glGenRenderbuffers(1)
-        self.x = int(x)
-        self.y = int(y)
-        self.size = Point(x,y)
-        self.screensize = screensize
-        self.texture = glGenTextures(1)
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, self.fbo)
-        glBindTexture(GL_TEXTURE_2D, self.texture)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, self.x, self.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, None);
-        glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, self.depthbuffer)
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, self.x, self.y)
-        glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER_EXT, self.depthbuffer)
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, self.texture, 0); 
-        if glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT:
-            print 'crapso'
-            raise SystemExit
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0)
-        
-    def Target(self):
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, self.fbo)
-        if glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT:
-            print 'crapso1'
-            raise SystemExit
-        glPushAttrib(GL_VIEWPORT_BIT)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        glOrtho(0, self.x, 0, self.y,-10000,10000)
-        glMatrixMode(GL_MODELVIEW)
-        glViewport(0,0,self.x, self.y)
+class Texture(object):
+    """ Load a (potential) group of textures  """
+    def __init__(self,filename,normal_filename = None, occlusion_filename = None, displacement_filename = None):
+        self.filenames = [filename]
+        for fname in normal_filename,occlusion_filename,displacement_filename:
+            if fname:
+                self.filenames.append(fname)
+        self.textures = [TextureImage(filename) for filename in self.filenames]
+        #They need to all be the same size...
+        if len(set((im.width,im.height) for im in self.textures)) != 1:
+            raise TypeError('Invalid texture sizes')
 
-    def Detarget(self):
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        glOrtho(0, self.screensize.x, 0, self.screensize.y,-10000,10000)
-        glMatrixMode(GL_MODELVIEW)
-        glPopAttrib()
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0)
+        self.width = self.textures[0].width
+        self.height = self.textures[0].height
+        self.texture = self.textures[0].texture
+        for i,name in enumerate(('normal_texture','occlude_texture','displacement_texture')):
+            try:
+                t = self.textures[i+1].texture
+            except IndexError:
+                t = None
+            setattr(self,name,t)
 
 
-#texture atlas code taken from 
+#texture atlas code taken from
 #http://omnisaurusgames.com/2011/06/texture-atlas-generation-using-python/
 #I'm assuming it's open source!
 
@@ -103,8 +79,15 @@ class SubImage(object):
 
 
 class TextureAtlas(object):
-    def __init__(self,image_filename,data_filename):
-        self.texture = Texture(image_filename)
+    def __init__(self,image_filename,data_filename,extra_names = False):
+        if extra_names:
+            extra_names = ('_normal','_occlude','_displace')
+            extra_names = [image_filename[:-4] + extra + image_filename[-4:] for extra in extra_names]
+        else:
+            extra_names = []
+
+
+        self.texture = Texture(image_filename,*extra_names)
         self.subimages = {}
         #data_filename = os.path.join(globals.dirs.resource,data_filename)
         with open(data_filename,'rb') as f:
@@ -129,10 +112,16 @@ class TextureAtlas(object):
         name = '_'.join(name.split(os.path.sep))
         return self.subimages[name]
 
+    def TextureSubimage(self,name):
+        return self.Subimage(os.path.join(globals.dirs.sprites,name))
+
+    def TextureTextureSubimage(self,name):
+        return self.Subimage(os.path.join(globals.dirs.textures,name))
+
     def TransformCoord(self,subimage,value):
         value[0] = subimage.pos.x + value[0]*(float(subimage.size.x)/self.texture.width)
         value[1] = subimage.pos.y + value[1]*(float(subimage.size.y)/self.texture.height)
-    
+
     def TransformCoords(self,subimage,tc):
         if subimage != '/':
             subimage = '_'.join(subimage.split(os.path.sep))
@@ -147,6 +136,9 @@ class TextureAtlas(object):
 
     def TextureSpriteCoords(self,subimage):
         return self.TextureCoords(os.path.join(globals.dirs.sprites,subimage))
+
+    def TextureUiCoords(self,subimage):
+        return self.TextureCoords(os.path.join(globals.dirs.ui,subimage))
 
 class PetsciiAtlas(TextureAtlas):
     """
@@ -169,7 +161,7 @@ class PetsciiAtlas(TextureAtlas):
             w = 8
             h = 8
             self.subimages[subimage_name] = SubImage(Point(float(x)/self.texture.width,float(y)/self.texture.height),(Point(w,h)))
-            
+
 
 class TextTypes:
     SCREEN_RELATIVE = 1
@@ -178,8 +170,8 @@ class TextTypes:
     CUSTOM          = 4
     LEVELS          = {SCREEN_RELATIVE : constants.DrawLevels.ui + 0.1,
                        CUSTOM          : constants.DrawLevels.text,
-                       GRID_RELATIVE   : constants.DrawLevels.ui + 0.1,
-                       MOUSE_RELATIVE  : constants.DrawLevels.text}         
+                       GRID_RELATIVE   : constants.DrawLevels.ui + 1000,
+                       MOUSE_RELATIVE  : constants.DrawLevels.text}
 
 class TextAlignments:
     LEFT            = 1
@@ -193,7 +185,7 @@ class TextManager(object):
         #self.atlas = TextureAtlas(fontname,fontdataname)
         self.atlas = PetsciiAtlas('petscii.png')
         self.font_height = max(subimage.size.y for subimage in self.atlas.subimages.values())
-        self.quads = quads.QuadBuffer(131072) #these are reclaimed when out of use so this means 131072 concurrent chars
+        self.quads = quads.QuadBuffer(131072, ui=True) #these are reclaimed when out of use so this means 131072 concurrent chars
         TextTypes.BUFFER = {TextTypes.SCREEN_RELATIVE : self.quads,
                             TextTypes.GRID_RELATIVE   : globals.nonstatic_text_buffer,
                             TextTypes.MOUSE_RELATIVE  : globals.mouse_relative_buffer}
@@ -201,7 +193,8 @@ class TextManager(object):
 
     def Letter(self,char,textType,colour = constants.colours.white,userBuffer = None):
         """ Given a character, return a quad with the corresponding letter on it in this textManager's font """
-        quad = quads.Quad(userBuffer if textType == TextTypes.CUSTOM else TextTypes.BUFFER[textType])    
+
+        quad = quads.Quad(userBuffer if textType == TextTypes.CUSTOM else TextTypes.BUFFER[textType])
         quad.tc[0:4]  = self.atlas.TextureCoords(char)
         quad.SetColour(colour)
         #this is a bit dodge, should get its own class if I want to store extra things in it
@@ -227,10 +220,10 @@ class TextManager(object):
         sizes = [self.atlas.Subimage(char).size*scale*global_scale for char in text]
         out = Point(sum(item.x for item in sizes),max(item.y for item in sizes))
         return out
-    
+
     def Draw(self):
         glLoadIdentity()
-        opengl.DrawAll(self.quads,self.atlas.texture.texture)
+        opengl.DrawAll(self.quads,self.atlas.texture)
 
     def Purge(self):
         self.quads.truncate(0)

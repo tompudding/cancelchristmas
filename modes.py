@@ -10,10 +10,10 @@ class Mode(object):
     """ Abstract base class to represent game modes """
     def __init__(self,parent):
         self.parent = parent
-    
+
     def KeyDown(self,key):
         pass
-    
+
     def KeyUp(self,key):
         pass
 
@@ -67,7 +67,7 @@ class Titles(Mode):
             else:
                 target_opacity = self.backdrop_start_opacity + ((t - self.backdrop_start) / (self.backdrop_end - self.backdrop_start))*(self.backdrop_end_opacity - self.backdrop_start_opacity)
             self.backdrop.SetColour((0,0,0,target_opacity))
-        
+
         self.elapsed = t - self.start
         self.stage = self.handlers[self.stage](t)
         if self.stage == TitleStages.COMPLETE:
@@ -148,12 +148,12 @@ class Titles(Mode):
         self.parent.viewpos.Follow(globals.time,self.parent.map.player)
 
     def KeyDown(self,key):
-        if key in [13,27,32]: 
+        if key in [13,27,32]:
             if self.parent.viewpos.target and not self.parent.viewpos.follow:
                 if self.backdrop_end:
                     self.backdrop_end = self.backdrop_start + 1
                 self.parent.viewpos.Skip()
-        
+
             if not self.skipped_text:
                 self.SkipText()
             else:
@@ -162,7 +162,7 @@ class Titles(Mode):
     def MouseButtonDown(self,pos,button):
         self.KeyDown(0)
         return False,False
-    
+
     def Draw(self):
         pass
 
@@ -295,4 +295,4 @@ class GameMode(Mode):
             actor = self.parent.map.player.AdjacentActor()
             if actor:
                 actor.Converse()
-            
+

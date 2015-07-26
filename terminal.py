@@ -24,14 +24,14 @@ class Emulator(ui.UIElement):
         super(Emulator,self).__init__(parent,bl,tr)
         self.background_colour = background
         self.foreground_colour = foreground
-        self.scale = 2
+        self.scale = 8
         self.gameview = gameview
         self.computer = computer
         # find my door
         doors = [door for door in self.gameview.map.doors]
         doors.sort(lambda x,y:cmp((x.pos - self.computer.pos).SquareLength(),(y.pos - self.computer.pos).SquareLength()))
         self.door = doors[0]
-        
+
         self.size = (self.absolute.size/(globals.text_manager.GetSize(' ',self.scale).to_float())).to_int()
         self.quads = []
         self.mode  = Modes.ENTRY
@@ -49,7 +49,7 @@ class Emulator(ui.UIElement):
         self.current_buffer = []
         self.viewlines = self.GetCode().splitlines()
         self.viewpos = 0
-            
+
         self.cursor_entry = Point(0,0)
         self.cursor_view  = Point(0,0)
         self.cursor = self.cursor_entry
@@ -59,13 +59,13 @@ class Emulator(ui.UIElement):
                                bl = Point(0.15,-0.14),
                                tr = None,
                                text = 'Press TAB to switch to code view, ESC to close',
-                               scale = 2,
+                               scale = 8,
                                colour = drawing.constants.colours.green)
         #self.text_box = ui.Box(parent = self,
         #                       pos    = Point(0.2,0.9),
         #                       tr     = Point(1.1,1.2),
         #                       colour = (0,0,0,0.3))
-        
+
         self.AddMessage(self.GetBanner())
 
     def GetBanner(self):
@@ -147,7 +147,7 @@ class Emulator(ui.UIElement):
         for x in xrange(self.size.x):
             for y in xrange(self.size.y):
                 self.saved_buffer.append(self.quads[x][y].letter)
-        
+
     def RestoreEntryBuffer(self):
         pos = 0
         for x in xrange(self.size.x):
@@ -169,7 +169,7 @@ class Emulator(ui.UIElement):
         for y in xrange(numlines,self.size.y):
             for x in xrange(self.size.x):
                 globals.text_manager.SetLetterCoords(self.quads[x][y],' ')
-                
+
 
     def ViewAddKey(self,key):
         self.FlashOff()
@@ -287,7 +287,7 @@ while True:
 
     def GetCode(self):
         return self.code.format(pin = self.pin)
-            
+
 class DisguisedPinTerminal(GrotoEntryTerminal):
     code = """print("{banner})"
 while True:
@@ -344,7 +344,7 @@ class OverflowPinTerminal(Emulator):
     class States:
         ENTER_NAME = 0
         ENTER_PIN  = 1
-        
+
     Banner = 'Welcome to Present Preparation. Please enter your username'
     code = """#include <stdio.h>
 
@@ -369,13 +369,13 @@ username:\\n");
         //The man page tells me not to use gets ever due to a danger
         //of buffer overflows. I'm SANTA and I can do what I please!.
         gets(elf.elfname);
-    
+
         //We need to lookup their pin from the secret store
         SuperSecretPinLookup(elf.elfname,elf.correct_pin);
 
         //Now check to see if the forgetful elf remembers their pin
         printf("Welcome %s, Enter your PIN:\\n",elf.elfname);
-    
+
         gets(elf.given_pin);
 
         //Now check if the pins match
@@ -408,7 +408,7 @@ username:\\n");
             #and then when later asked for their pin their write 4 or fewer characters (with the null)
             #then the pin checked will have some characters set from this initial overflow.
             #Actually ignore this because I can't be bothered!
-            
+
             self.AddMessage('Welcome %s, Enter your PIN:' % self.name)
             self.state = self.States.ENTER_PIN
         elif self.state == self.States.ENTER_PIN:
@@ -434,7 +434,7 @@ username:\\n");
             else:
                 self.AddMessage('Access denied',fail = True)
             self.AddMessage(self.Banner)
-            self.state = self.States.ENTER_NAME                
+            self.state = self.States.ENTER_NAME
 
     def GetCode(self):
         return self.code
@@ -453,7 +453,7 @@ class IntegerOverflowTerminal(Emulator):
 // There are 200 elves working at the grotto,
 // with UIDs ranging from 1 - 8
 // Santa has UID the special UID 0
-// Store a table with their permissions for this door. 
+// Store a table with their permissions for this door.
 
 // For reference sizeof(*void) == sizeof(uint32_t) == 4
 
@@ -464,14 +464,14 @@ int main(void) {
     uint32_t uid;
     memset(permissions,0,(8 + 1)*sizeof(uint32_t));
 
-    //Set all the people who have permission. 
+    //Set all the people who have permission.
     //Oh look, it's only Santa
     permissions[0] = ACCESS_GRANTED;
 
     while(1) {
 
         printf("Greetings elf, enter your user id:\\n");
-        
+
         fgets(buffer,sizeof(buffer),stdin);
         //Make sure it's NULL terminated
         buffer[sizeof(buffer)-1] = '\\0';
@@ -490,7 +490,7 @@ int main(void) {
         }
 
         //Check if they have permission
-        
+
         if(ACCESS_GRANTED == permissions[uid]) {
             printf("Access Granted\\n");
             toggle_door();
@@ -528,7 +528,7 @@ int main(void) {
 
         finally:
             self.AddMessage(self.Banner)
-                
+
     def GetCode(self):
         return self.code
 
@@ -544,7 +544,7 @@ class SqlInjectionTerminal(Emulator):
   with con:
     cur = con.cursor()
     try:
-      #Mrs Claus keeps insisting that this is vulnerable to an 
+      #Mrs Claus keeps insisting that this is vulnerable to an
       #SQL injection attack. Nag Nag Nag.
       command = "SELECT Name,Password from Passwords WHERE UID = '%s'" % uid
       results = database.execute(command)
@@ -590,7 +590,7 @@ class SqlInjectionTerminal(Emulator):
         if self.state == self.States.ENTER_UID:
             results = []
             with self.con:
-                #Sqlite quite sensibly limits execute to only one statement, so simulate 
+                #Sqlite quite sensibly limits execute to only one statement, so simulate
                 #a more dodgy database by allowing them. Sqlite would still be vulnerable
                 #to a blind injection attack on the passwords, but that would be too hard
                 #for this game. Left as an exercise for the reader!
@@ -628,8 +628,8 @@ class SqlInjectionTerminal(Emulator):
             except: #You're not supposed to add generic exceptions, but evil hackers keep breaking my code!
                 self.AddMessage('Access Denied',fail = True)
             self.AddMessage(self.Banner)
-            self.state = self.States.ENTER_UID                
-                
+            self.state = self.States.ENTER_UID
+
     def GetCode(self):
         return self.code
 
@@ -646,7 +646,7 @@ class FinalChallengeTerminal(Emulator):
                 self.AddMessage('Access denied',fail = True)
         finally:
             self.AddMessage(self.Banner)
-                
+
     def GetCode(self):
         return self.code
 
@@ -672,12 +672,12 @@ class NaughtyListTerminal(Emulator):
                 self.deleted = True
             else:
                 self.AddMessage("It's already deleted. Seriously, just press ESC")
-            
+
         else:# command == 'help':
             if command != 'help':
                 self.AddMessage('Unknown command %s' % command)
             self.AddMessage(self.Banner)
-                
+
     def GetCode(self):
         return self.code
 

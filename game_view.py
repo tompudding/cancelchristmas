@@ -94,7 +94,7 @@ class Viewpos(object):
                         newdiff = target - self.pos
                     else:
                         self.pos += diff*0.02
-                
+
         elif self.target:
             if t >= self.target_time:
                 self.pos = self.target
@@ -154,7 +154,7 @@ class TileData(object):
             self.name = self.texture_names[type]
         except KeyError:
             self.name = self.texture_names[TileTypes.GRASS]
-        
+
         if self.name in ('tile.png','grass.png'):
             if random.random() > 0.97:
                 self.name = 'candycane_' + self.name
@@ -167,7 +167,7 @@ class TileData(object):
 class Door(TileData):
     def __init__(self,type,pos):
         super(Door,self).__init__(type,pos)
-        
+
     def Toggle(self):
         if self.type == TileTypes.DOOR_CLOSED:
             self.type = TileTypes.DOOR_OPEN
@@ -346,11 +346,15 @@ class GameView(ui.RootElement):
         self.game_over = False
         pygame.mixer.music.load('music.ogg')
         self.music_playing = False
+        self.light      = drawing.Quad(globals.light_quads)
+        self.light.SetVertices(Point(0,0),
+                               globals.screen_abs - Point(0,0),
+                               0)
         self.text = ui.TextBox(globals.screen_root,
                                bl = Point(0.15,0.15),
                                tr = None,
                                text = 'Press space to computer',
-                               scale = 2,
+                               scale = 8,
                                colour = drawing.constants.colours.white)
         self.text.box = ui.Box(parent = self.text,
                                pos    = Point(-0.1,-0.2),
@@ -360,7 +364,7 @@ class GameView(ui.RootElement):
                                bl = Point(0.15,0.15),
                                tr = None,
                                text = 'Press space to activate switch',
-                               scale = 2,
+                               scale = 8,
                                colour = drawing.constants.colours.white)
         self.switch_text.box = ui.Box(parent = self.switch_text,
                                pos    = Point(-0.1,-0.2),
@@ -370,7 +374,7 @@ class GameView(ui.RootElement):
                                bl = Point(0.15,0.15),
                                tr = None,
                                text = 'Press space to words',
-                               scale = 2,
+                               scale = 8,
                                colour = drawing.constants.colours.white)
         self.actor_text.box = ui.Box(parent = self.actor_text,
                                pos    = Point(-0.1,-0.2),
@@ -389,7 +393,7 @@ class GameView(ui.RootElement):
                                bl = Point(0.5,0.02),
                                tr = None,
                                text = 'Press delete to mute the annoying music',
-                               scale = 2,
+                               scale = 8,
                                colour = drawing.constants.colours.white)
         self.music_text.box = ui.Box(parent = self.music_text,
                                pos    = Point(-0.1,-0.2),
@@ -398,12 +402,13 @@ class GameView(ui.RootElement):
 
     def Draw(self):
         drawing.ResetState()
-        drawing.DrawAll(globals.backdrop_buffer,self.atlas.texture.texture)
+        drawing.DrawAll(globals.backdrop_buffer,self.atlas.texture)
         drawing.ResetState()
         drawing.Translate(-self.viewpos.pos.x,-self.viewpos.pos.y,0)
-        drawing.DrawAll(globals.quad_buffer,self.atlas.texture.texture)
-        drawing.DrawAll(globals.nonstatic_text_buffer,globals.text_manager.atlas.texture.texture)
-        
+        drawing.DrawAll(globals.quad_buffer,self.atlas.texture)
+        drawing.Scale(globals.scale.x,globals.scale.y,1)
+        drawing.DrawAll(globals.nonstatic_text_buffer,globals.text_manager.atlas.texture)
+
     def Update(self,t):
         if self.mode:
             self.mode.Update(t)
@@ -413,7 +418,7 @@ class GameView(ui.RootElement):
 
         if self.computer:
             return self.computer.Update(t)
-            
+
         self.t = t
         self.viewpos.Update(t)
         if self.viewpos.pos.x < 0:
@@ -449,7 +454,7 @@ class GameView(ui.RootElement):
 
     def CloseScreen(self):
         self.computer = None
-        
+
     def KeyDown(self,key):
         self.mode.KeyDown(key)
 

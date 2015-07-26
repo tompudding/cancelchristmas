@@ -30,7 +30,7 @@ class UIElementList:
         for item in self.items:
             out.append('%s:%s - %s(%s)' % (item.absolute.bottom_left,item.absolute.top_right,str(item),item.text if hasattr(item,'text') else 'N/A'))
         return '\n'.join(out)
-        
+
     def Get(self,pos):
         """Return the object at a given absolute position, or None if None exist"""
         match = [-1,None]
@@ -39,11 +39,11 @@ class UIElementList:
                 if height > match[0]:
                     match = [height,ui]
         return match[1]
-    
+
 class AbsoluteBounds(object):
     """
-    Store the bottom left, top right and size data for a rectangle in screen coordinates. We could 
-    ask the parent and compute this each time, but it will be more efficient if we store it and 
+    Store the bottom left, top right and size data for a rectangle in screen coordinates. We could
+    ask the parent and compute this each time, but it will be more efficient if we store it and
     use it directly, and rely on the parent to update its children when things change
     """
     def __init__(self):
@@ -94,7 +94,7 @@ class UIElement(object):
         else:
             return
         del self.children[i]
-                
+
 
     def __contains__(self,pos):
         if pos.x < self.absolute.bottom_left.x or pos.x >= self.absolute.top_right.x:
@@ -113,9 +113,9 @@ class UIElement(object):
         """
         Called when you the mouse cursor is over the element and the button is pushed down. If the cursor
         is moved away while the button is still down, and then the cursor is moved back over this element
-        still with the button held down, this is called again. 
+        still with the button held down, this is called again.
 
-        Returns the target of a dragging event if any. For example, if we return self, then we indicate 
+        Returns the target of a dragging event if any. For example, if we return self, then we indicate
         that we have begun a drag and want to receive all mousemotion events until that drag is ended.
         """
         return None
@@ -123,7 +123,7 @@ class UIElement(object):
     def Undepress(self):
         """
         Called after Depress has been called, either when the button is released while the cursor is still
-        over the element (In which case a OnClick is called too), or when the cursor moves off the element 
+        over the element (In which case a OnClick is called too), or when the cursor moves off the element
         (when OnClick is not called)
         """
         pass
@@ -197,7 +197,7 @@ class RootElement(UIElement):
         self.active_children     = UIElementList()
         self.depressed           = None
         self.SetBounds(bl,tr)
-        
+
     def RegisterUIElement(self,element):
         self.active_children[element] = element.level
 
@@ -231,7 +231,7 @@ class RootElement(UIElement):
             self.hovered = hovered
             if self.hovered:
                 self.hovered.Hover()
-            
+
         return True if hovered else False
 
     def MouseButtonDown(self,pos,button):
@@ -242,9 +242,9 @@ class RootElement(UIElement):
         dragging = None
         if self.hovered:
             if button == 1:
-                #If you click and hold on a button, it becomes depressed. If you then move the mouse away, 
+                #If you click and hold on a button, it becomes depressed. If you then move the mouse away,
                 #it becomes undepressed, and you can move the mouse back and depress it again (as long as you
-                #keep the mouse button down. You can't move over another button and depress it though, so 
+                #keep the mouse button down. You can't move over another button and depress it though, so
                 #we record which button is depressed
                 if self.depressed:
                     #Something's got a bit messed up and we must have missed undepressing that last depressed button. Do
@@ -268,19 +268,19 @@ class RootElement(UIElement):
                 #Whatever happens, the button gets depressed
                 self.depressed.Undepress()
                 self.depressed = None
-        
+
             return handled,False
         return False,False
 
     def Update(self,t):
         pass
-    
+
     def Draw(self):
         pass
 
     def KeyUp(self,key):
         pass
-    
+
     def KeyDown(self,key):
         pass
 
@@ -294,18 +294,14 @@ class UIRoot(RootElement):
         self.updateable_children = {}
 
     def Draw(self):
-        glDisable(GL_TEXTURE_2D)
-        glEnableClientState(GL_VERTEX_ARRAY)
-        glEnableClientState(GL_COLOR_ARRAY)
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY)
-        glLoadIdentity()
-        glVertexPointerf(globals.ui_buffer.vertex_data)
-        glColorPointer(4,GL_FLOAT,0,globals.ui_buffer.colour_data)
-        glDrawElements(GL_QUADS,globals.ui_buffer.current_size,GL_UNSIGNED_INT,globals.ui_buffer.indices)
-        glEnable(GL_TEXTURE_2D)
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+        drawing.ResetState()
+        drawing.DrawNoTexture(globals.ui_buffer)
+
         for item in self.drawable_children:
             item.Draw()
+
+        drawing.ResetState()
+        #drawing.DrawAll(globals.screen_texture_buffer,globals.ui_atlas.texture)
 
     def Update(self,t):
         #Would it be faster to make a list of items to remove and then remove them, rather than build a new list?
@@ -336,7 +332,7 @@ class UIRoot(RootElement):
             del self.updateable_children[item]
         except KeyError:
             pass
-            
+
 class HoverableElement(UIElement):
     """
     This class represents a UI element that accepts a hover; i.e when the cursor is over it the hover event
@@ -359,7 +355,7 @@ class HoverableElement(UIElement):
         if not self.enabled:
             self.root.RegisterUIElement(self)
         super(HoverableElement,self).Enable()
-    
+
 
 class Box(UIElement):
     def __init__(self,parent,pos,tr,colour):
@@ -382,12 +378,12 @@ class Box(UIElement):
     def Delete(self):
         super(Box,self).Delete()
         self.quad.Delete()
-        
+
     def Disable(self):
         if self.enabled:
             self.quad.Disable()
         super(Box,self).Disable()
-        
+
 
     def Enable(self):
         if not self.enabled:
@@ -444,7 +440,7 @@ class TextBox(UIElement):
     def Position(self,pos,scale,colour = None,ignore_height = False):
         """Draw the text at the given location and size. Maybe colour too"""
         #set up the position for the characters. Note that we do everything here in size relative
-        #to our text box (so (0,0) is bottom_left, (1,1) is top_right. 
+        #to our text box (so (0,0) is bottom_left, (1,1) is top_right.
         self.pos = pos
         self.absolute.bottom_left = self.GetAbsoluteInParent(pos)
         self.scale = scale
@@ -464,7 +460,7 @@ class TextBox(UIElement):
                 continue
             quad,letter_size = self.quads[i],letter_sizes[i]
             if cursor.x + letter_size.x > (1-self.margin.x)*1.001:
-                #This would take us over a line. If we're in the middle of a word, we need to go back to the start of the 
+                #This would take us over a line. If we're in the middle of a word, we need to go back to the start of the
                 #word and start the new line there
                 restart = False
                 if quad.letter in ' \t':
@@ -485,12 +481,12 @@ class TextBox(UIElement):
                     #skip the space
                     i += 1
                     restart = True
-                        
+
                 cursor.x = self.margin.x
                 cursor.y -= row_height*1.2
                 if restart:
                     continue
-            
+
             if cursor.x == self.margin.x and self.alignment == drawing.texture.TextAlignments.CENTRE:
                 #If we're at the start of a row, and we're trying to centre the text, then check to see how full this row is
                 #and if it's not full, offset so that it becomes centred
@@ -571,7 +567,7 @@ class TextBox(UIElement):
             for q in self.quads:
                 q.Disable()
         self.current_enabled = len(self.quads)
-    
+
     def ReallocateResources(self):
         self.newlines = []
         for i,char in enumerate(self.text):
@@ -585,7 +581,7 @@ class TextBox(UIElement):
             for q in self.quads:
                 q.Disable()
         super(TextBox,self).Disable()
-        
+
 
     def Enable(self):
         """Alright, you're back on the team!"""
@@ -677,7 +673,7 @@ class FaderTextBox(TextBox):
         glTranslate(-globals.tiles.viewpos.Get().x,-globals.tiles.viewpos.Get().y,0)
         glTranslate(self.absolute.bottom_left.x,self.absolute.bottom_left.y,0)
         glScale(self.draw_scale,self.draw_scale,1)
-        
+
         glVertexPointerf(self.quad_buffer.vertex_data)
         glTexCoordPointerf(self.quad_buffer.tc_data)
         glColorPointer(4,GL_FLOAT,0,self.quad_buffer.colour_data)
@@ -695,7 +691,7 @@ class FaderTextBox(TextBox):
         glTranslate(self.absolute.bottom_left.x,self.absolute.bottom_left.y,0)
         glScale(self.draw_scale,self.draw_scale,1)
         glDrawElements(GL_QUADS,self.quad_buffer.current_size,GL_UNSIGNED_INT,self.quad_buffer.indices)
-        
+
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_TEXTURE_COORD_ARRAY)
@@ -747,7 +743,7 @@ class ScrollTextBox(TextBox):
         glTexCoordPointerf(self.quad_buffer.tc_data)
         glColorPointer(4,GL_FLOAT,0,self.quad_buffer.colour_data)
         glDrawElements(GL_QUADS,self.quad_buffer.current_size,GL_UNSIGNED_INT,self.quad_buffer.indices)
-        
+
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         glOrtho(0, globals.screen.x, 0, globals.screen.y,-10000,10000)
@@ -768,7 +764,7 @@ class ScrollTextBox(TextBox):
         if viewpos > low_thresh:
             viewpos = low_thresh
         return viewpos
-       
+
     def MouseMotion(self,pos,rel,handled):
         pos = self.GetRelative(pos)
         low_thresh = 0.05
@@ -799,7 +795,7 @@ class TextBoxButton(TextBox):
             self.hover_quads[i].Disable()
         self.registered = False
         self.Enable()
-        
+
     def Position(self,pos,scale,colour = None):
         super(TextBoxButton,self).Position(pos,scale,colour)
         self.SetVertices()
@@ -811,7 +807,7 @@ class TextBoxButton(TextBox):
     def SetVertices(self):
         for i in xrange(4):
             self.hover_quads[i].SetColour((1,0,0,1))
-        
+
         #top bar
         self.hover_quads[0].SetVertices(Point(self.absolute.bottom_left.x,self.absolute.top_right.y-self.line_width),
                                         self.absolute.top_right,
@@ -820,7 +816,7 @@ class TextBoxButton(TextBox):
         self.hover_quads[1].SetVertices(Point(self.absolute.top_right.x-self.line_width,self.absolute.bottom_left.y),
                                         self.absolute.top_right,
                                         drawing.constants.DrawLevels.ui+1)
-        
+
         #bottom bar
         self.hover_quads[2].SetVertices(self.absolute.bottom_left,
                                         Point(self.absolute.top_right.x,self.absolute.bottom_left.y+self.line_width),
@@ -834,7 +830,7 @@ class TextBoxButton(TextBox):
             for i in xrange(4):
                 self.hover_quads[i].Disable()
 
-                                  
+
     def SetPos(self,pos):
         #FIXME: This is shit. I can't be removing and adding every frame
         reregister = self.enabled
@@ -928,7 +924,7 @@ class Slider(UIElement):
         line_tr       = line_bl + self.clickable_area.absolute.size*Point(1,0) + Point(0,2)
         line.SetVertices(line_bl,line_tr,self.uilevel)
         line.Disable()
-        
+
         low  = self.points[ 0][0]
         high = self.points[-1][0]
         self.offsets = [float(value - low)/(high-low) if low != high else 0 for value,index in self.points]
@@ -952,7 +948,7 @@ class Slider(UIElement):
 
     def SetPointer(self):
         offset = self.offsets[self.index]
-        
+
         pointer_bl = Point(offset,0.3) - (Point(2,10)/self.clickable_area.absolute.size)
         pointer_tr = pointer_bl + (Point(7,14)/self.clickable_area.absolute.size)
         self.pointer_ui.SetBounds(pointer_bl,pointer_tr)
@@ -997,7 +993,7 @@ class Slider(UIElement):
         temp_ui = UIElement(self.clickable_area,pointer_bl,pointer_tr)
         self.pointer_quad.SetVertices(temp_ui.absolute.bottom_left,temp_ui.absolute.top_right,self.uilevel + 0.1)
         self.clickable_area.RemoveChild(temp_ui)
-        #If there are any eligible choices between the currently selected choice and the mouse cursor, choose 
+        #If there are any eligible choices between the currently selected choice and the mouse cursor, choose
         #the one closest to the cursor
         #Where is the mouse?
         i = bisect.bisect_right(self.offsets,relative_pos.x)
@@ -1013,7 +1009,7 @@ class Slider(UIElement):
                 chosen = i-1
             else:
                 chosen = i
-            
+
         if chosen != self.index:
             self.index = chosen
             #self.SetPointer()
@@ -1055,7 +1051,7 @@ class ListBox(UIElement):
         self.items = items
         height = 0.8
         maxx   = 0
-        
+
         for name,value in self.items:
             t = TextBox(parent = self            ,
                         bl    = Point(0.05,height),
@@ -1067,7 +1063,7 @@ class ListBox(UIElement):
                 maxx = t.top_right.x
             if not self.enabled:
                 t.Disable()
-        
+
         last_height = height = 0.8
         for i,(name,value) in enumerate(self.items):
             if i == len(self.items) -1:
@@ -1085,8 +1081,8 @@ class ListBox(UIElement):
                 t.Disable()
             last_height = height
             height -= t.size.y
-        
-        
+
+
 
 class TabPage(UIElement):
     """
@@ -1107,7 +1103,7 @@ class TabbedArea(UIElement):
         super(TabbedArea,self).AddChild(element)
         if isinstance(element,TabPage):
             self.parent.AddTabPage(element)
-            
+
 class TabbedEnvironment(UIElement):
     """
     An element that has a number of sub-element tabs. To make a tab you just create a TabPage that has tab_area as its parent
@@ -1131,7 +1127,7 @@ class TabbedEnvironment(UIElement):
                                    tr       = None           ,
                                    size     = 0.2            ,
                                    callback = utils.ExtraArgs(self.OnClick,len(self.buttons)))
-        
+
         self.buttons.append(new_button)
         self.pages.append(page)
         if len(self.pages) == 1:
@@ -1154,4 +1150,4 @@ class TabbedEnvironment(UIElement):
         for page in self.pages:
             if page is not self.current_page:
                 page.Disable()
-                
+

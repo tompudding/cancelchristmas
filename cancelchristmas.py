@@ -11,14 +11,29 @@ def Init():
     w,h = (1280,720)
     globals.tile_scale            = Point(1,1)
     globals.scale                 = Point(4,4)
-    globals.screen                = Point(w,h)/globals.scale
-    globals.screen_root           = ui.UIRoot(Point(0,0),globals.screen)
+    globals.screen_abs            = Point(w,h)
+    globals.screen                = globals.screen_abs/globals.scale
+    globals.screen_root           = ui.UIRoot(Point(0,0),globals.screen_abs)
+    globals.mouse_screen          = Point(0,0)
+    globals.lights                = []
+    globals.cone_lights           = []
+    globals.non_shadow_lights     = []
+    globals.uniform_lights        = []
+
     globals.quad_buffer           = drawing.QuadBuffer(131072)
-    globals.ui_buffer             = drawing.QuadBuffer(131072)
-    globals.nonstatic_text_buffer = drawing.QuadBuffer(131072)
-    globals.backdrop_buffer       = drawing.QuadBuffer(8)
+    globals.backdrop_buffer       = drawing.QuadBuffer(8, ui=True)
+    globals.screen_texture_buffer = drawing.QuadBuffer(131072, ui=True)
+    globals.ui_buffer             = drawing.QuadBuffer(131072, ui=True)
+    globals.nonstatic_text_buffer = drawing.QuadBuffer(131072, ui=True, grid_relative=True)
+    globals.light_quads           = drawing.QuadBuffer(16384)
+    globals.nightlight_quads      = drawing.QuadBuffer(16)
+    globals.temp_mouse_light      = drawing.QuadBuffer(16)
     globals.colour_tiles          = drawing.QuadBuffer(131072)
-    globals.mouse_relative_buffer = drawing.QuadBuffer(1024)
+    globals.mouse_relative_buffer = drawing.QuadBuffer(1024, ui=True, mouse_relative=True)
+    globals.line_buffer           = drawing.LineBuffer(16384)
+    globals.shadow_quadbuffer     = drawing.ShadowQuadBuffer(256*4)
+    globals.temp_mouse_shadow     = globals.shadow_quadbuffer.NewLight()
+    globals.colour_tiles          = drawing.QuadBuffer(131072)
     globals.tile_dimensions       = Point(16,16)*globals.tile_scale
     globals.sounds                = sounds.Sounds()
 
@@ -40,6 +55,7 @@ def main():
     done = False
     last = 0
     clock = pygame.time.Clock()
+    drawing.InitDrawing()
 
     while not done:
         drawing.NewFrame()
@@ -48,13 +64,15 @@ def main():
         if t - last > 1000:
             #print 'FPS:',clock.get_fps()
             last = t
-        
+
         #globals.current_time = t
 
         globals.current_view.Update(t)
-        globals.current_view.Draw()
         globals.screen_root.Draw()
+        globals.current_view.Draw()
+
         globals.text_manager.Draw()
+        drawing.EndFrame()
         pygame.display.flip()
 
         eventlist = pygame.event.get()
@@ -92,7 +110,7 @@ def main():
                             break
                         if handled:
                             break
-                    
+
                 elif (event.type == pygame.MOUSEBUTTONUP):
                     for layer in globals.screen_root,globals.current_view:
                         handled,dragging = layer.MouseButtonUp(pos,event.button)
