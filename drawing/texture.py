@@ -75,7 +75,7 @@ class SubImage(object):
     def TextureCoordinates(self,left,right,top,bottom):
         left,right = [float(v)/self.size.x for v in (left,right)]
         top,bottom = [float(v)/self.size.y for v in (top,bottom)]
-        return numpy.array(((left,1-bottom),(left,0.99-top),(right,0.99-top),(right,1-bottom)),numpy.float32)
+        return numpy.array(((left,1-bottom),(left,1-top),(right,1-top),(right,1-bottom)),numpy.float32)
 
 
 class TextureAtlas(object):
