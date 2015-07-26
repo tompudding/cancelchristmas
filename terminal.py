@@ -56,7 +56,7 @@ class Emulator(ui.UIElement):
         self.saved_buffer = []
 
         self.text = ui.TextBox(self,
-                               bl = Point(0.15,-0.14),
+                               bl = Point(0.15,0),
                                tr = None,
                                text = 'Press TAB to switch to code view, ESC to close',
                                scale = 8,

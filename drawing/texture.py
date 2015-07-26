@@ -75,7 +75,7 @@ class SubImage(object):
     def TextureCoordinates(self,left,right,top,bottom):
         left,right = [float(v)/self.size.x for v in (left,right)]
         top,bottom = [float(v)/self.size.y for v in (top,bottom)]
-        return numpy.array(((left,1-bottom),(left,1-top),(right,1-top),(right,1-bottom)),numpy.float32)
+        return numpy.array(((left,1-bottom),(left,0.99-top),(right,0.99-top),(right,1-bottom)),numpy.float32)
 
 
 class TextureAtlas(object):
@@ -156,8 +156,8 @@ class PetsciiAtlas(TextureAtlas):
             x = ch&0xf
             y = ((ch-0x20)>>4)&0xf
             #Now we need it relative to 0,0 in the top left, and all multiplied by 8 for pixel coords
-            x *= 8
-            y = (7-y)*8
+            x = 1 + (x*9)
+            y = 1 + ((7-y)*9)
             w = 8
             h = 8
             self.subimages[subimage_name] = SubImage(Point(float(x)/self.texture.width,float(y)/self.texture.height),(Point(w,h)))
@@ -170,7 +170,7 @@ class TextTypes:
     CUSTOM          = 4
     LEVELS          = {SCREEN_RELATIVE : constants.DrawLevels.ui + 0.1,
                        CUSTOM          : constants.DrawLevels.text,
-                       GRID_RELATIVE   : constants.DrawLevels.ui + 1000,
+                       GRID_RELATIVE   : constants.DrawLevels.ui + 0.1,
                        MOUSE_RELATIVE  : constants.DrawLevels.text}
 
 class TextAlignments:
@@ -183,7 +183,7 @@ class TextManager(object):
     def __init__(self):
         #fontname,fontdataname = (os.path.join('fonts',name) for name in ('pixelmix.png','pixelmix.txt'))
         #self.atlas = TextureAtlas(fontname,fontdataname)
-        self.atlas = PetsciiAtlas('petscii.png')
+        self.atlas = PetsciiAtlas('petscii_expanded.png')
         self.font_height = max(subimage.size.y for subimage in self.atlas.subimages.values())
         self.quads = quads.QuadBuffer(131072, ui=True) #these are reclaimed when out of use so this means 131072 concurrent chars
         TextTypes.BUFFER = {TextTypes.SCREEN_RELATIVE : self.quads,

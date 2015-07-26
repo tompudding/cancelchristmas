@@ -1,23 +1,12 @@
-while True:
-  print 'Welcome to Market Research. Enter your UID:'
-  uid = raw_input()
-  with con:
-    cur = con.cursor()
-    try:
-      #Mrs Claus keeps insisting that this is vulnerable to an 
-      #SQL injection attack. Nag Nag Nag.
-      command = "SELECT Name,Password from Passwords WHERE UID = '%s'" % uid
-      results = database.execute(command)
-    except error as e:
-      print 'Error with UID',str(e)
-    if results == None:
-      print 'No such UID'
+import Image
 
-    name,password = results[0]
-    print 'Greetings %s, what is your password?' % (name)
-    given_password = raw_input()
-    if given_password == password:
-      print 'Access granted'
-      door.toggle()
-    else:
-      print 'Access denied'
+im = Image.open('petscii.png')
+
+out = Image.new("RGBA",(145,73))
+
+for x in xrange(16):
+  for y in xrange(8):
+    src = im.crop( (x*8, y*8, (x+1)*8, (y+1)*8) )
+    out.paste(src, (x*9+1, y*9+1, (x*9)+9, y*9+9) )
+
+out.save('petscii_expanded.png')
