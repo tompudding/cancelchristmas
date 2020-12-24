@@ -129,7 +129,7 @@ class Shape(object):
     """
 
     def __init__(self,source,vertex = None,tc = None,colour_info = None,index = None):
-        if index == None:
+        if index is None:
             self.index = source.next()
         else:
             self.index = index
@@ -137,9 +137,9 @@ class Shape(object):
         self.vertex = ShapeVertex(self.index,source.vertex_data)
         self.tc     = ShapeVertex(self.index,source.tc_data)
         self.colour = ShapeVertex(self.index,source.colour_data)
-        if vertex != None:
+        if vertex is not None:
             self.vertex[0:self.num_points] = vertex
-        if tc != None:
+        if tc is not None:
             self.tc[0:self.num_points] = tc
         self.old_vertices = None
         self.deleted = False
@@ -161,7 +161,7 @@ class Shape(object):
         """
         if self.deleted:
             return
-        if self.old_vertices == None:
+        if self.old_vertices is None:
             self.old_vertices = numpy.copy(self.vertex[0:self.num_points])
             for i in xrange(self.num_points):
                 self.vertex[i] = (0,0,0)
@@ -172,7 +172,7 @@ class Shape(object):
         """
         if self.deleted:
             return
-        if self.old_vertices != None:
+        if self.old_vertices is not None:
             for i in xrange(self.num_points):
                 self.vertex[i] = self.old_vertices[i]
             self.old_vertices = None
@@ -181,7 +181,7 @@ class Shape(object):
         if self.deleted:
             return
         self.setvertices(self.vertex,bl,tr,z)
-        if self.old_vertices != None:
+        if self.old_vertices is not None:
             self.old_vertices = numpy.copy(self.vertex[0:self.num_points])
             for i in xrange(self.num_points):
                 self.vertex[i] = (0,0,0)
@@ -190,7 +190,7 @@ class Shape(object):
         if self.deleted:
             return
         setallvertices(self,self.vertex,vertices,z)
-        if self.old_vertices != None:
+        if self.old_vertices is not None:
             self.old_vertices = numpy.copy(self.vertex[0:self.num_points])
             for i in xrange(self.num_points):
                 self.vertex[i] = (0,0,0)
@@ -199,7 +199,7 @@ class Shape(object):
         return (Point(self.vertex[0][0],self.vertex[0][1]) + Point(self.vertex[2][0],self.vertex[2][1]))/2
 
     def Translate(self,amount):
-        if self.old_vertices != None:
+        if self.old_vertices is not None:
             vertices = self.old_vertices
         else:
             vertices = self.vertex
