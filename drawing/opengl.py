@@ -9,7 +9,7 @@ from OpenGL.GL.framebufferobjects import *
 from globals.types import Point
 import globals
 import time
-import constants
+from . import constants
 import itertools
 
 numpymodule.NumpyHandler.ERROR_ON_COPY = True
@@ -24,7 +24,7 @@ class GeometryBuffer(object):
 
     def __init__(self,width,height):
         self.fbo = glGenFramebuffers(1)
-        print 'fbo',self.fbo
+        print('fbo',self.fbo)
         self.BindForWriting()
         try:
             self.InitBound(width,height)
@@ -39,7 +39,7 @@ class GeometryBuffer(object):
         self.depth_texture = glGenTextures(1)
         glActiveTexture(GL_TEXTURE0)
 
-        for i in xrange(self.NUM_TEXTURES):
+        for i in range(self.NUM_TEXTURES):
             glBindTexture(GL_TEXTURE_2D, self.textures[i])
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, None)
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -52,7 +52,7 @@ class GeometryBuffer(object):
 
         glDrawBuffers([GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3])
         if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
-            print 'crapso_'
+            print('crapso_')
             raise SystemExit
 
     def BindForWriting(self):
@@ -85,7 +85,7 @@ class ShadowMapBuffer(GeometryBuffer):
         #self.depth_texture = glGenTextures(1)
         glActiveTexture(GL_TEXTURE0)
 
-        for i in xrange(self.NUM_TEXTURES):
+        for i in range(self.NUM_TEXTURES):
             glBindTexture(GL_TEXTURE_2D, self.textures[i])
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, None)
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -98,7 +98,7 @@ class ShadowMapBuffer(GeometryBuffer):
         glDrawBuffers([GL_COLOR_ATTACHMENT0])
 
         if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
-            print 'crapso'
+            print('crapso')
             raise SystemExit
 
     def BindForWriting(self):
@@ -183,13 +183,13 @@ class State(object):
         self.Update()
 
     def Update(self,pos = None, scale = None):
-        if pos == None:
+        if pos is None:
             pos = self.pos
-        if scale == None:
+        if scale is None:
             scale = self.scale
-        if self.shader.locations.translation != None:
+        if self.shader.locations.translation is not None:
             glUniform2f(self.shader.locations.translation, pos.x, pos.y)
-        if self.shader.locations.scale != None:
+        if self.shader.locations.scale is not None:
             glUniform2f(self.shader.locations.scale, scale.x, scale.y)
 
 class UIBuffers(object):
@@ -202,7 +202,7 @@ class UIBuffers(object):
             local_state = (state.pos,state.scale)
         else:
             local_state = None
-        if texture != None:
+        if texture is not None:
             self.buffers.append( ((quad_buffer,texture,default_shader),local_state,DrawAllNow) )
         else:
             self.buffers.append( ((quad_buffer,default_shader),local_state,DrawNoTextureNow) )

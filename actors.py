@@ -58,7 +58,7 @@ class Actor(object):
             dir = Directions.UP
         elif amount.y < 0:
             dir = Directions.DOWN
-        if dir != None and dir != self.dir:
+        if dir is not None and dir != self.dir:
             self.dir = dir
             self.quad.SetTextureCoordinates(self.dirs[self.dir])
         #check each of our four corners

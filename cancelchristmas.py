@@ -85,7 +85,7 @@ def main():
                 try:
                     #Try to use the unicode field instead. If it doesn't work for some reason,
                     #use the old value
-                    key = ord(event.unicode)
+                    key = ord(event.str)
                 except (TypeError,AttributeError):
                     pass
                 globals.current_view.KeyDown(key)
@@ -130,8 +130,8 @@ if __name__ == '__main__':
 
     try:
         main()
-    except Exception, e:
-        print 'Caught exception, writing to error log...'
+    except Exception as e:
+        print('Caught exception, writing to error log...')
         logging.exception("Oops:")
         #Print it to the console too...
         raise
