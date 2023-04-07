@@ -25,7 +25,7 @@ class TextureImage(object):
     def __init__(self, filename):
         # filename = os.path.join(globals.dirs.resource,filename)
         if filename not in cache:
-            with open(filename, "r") as f:
+            with open(globals.pyinst.path(filename), "r") as f:
                 self.textureSurface = pygame.image.load(f)
             self.textureData = pygame.image.tostring(self.textureSurface, "RGBA", 1)
 
@@ -107,7 +107,7 @@ class TextureAtlas(object):
         self.texture = Texture(image_filename, *extra_names)
         self.subimages = {}
         # data_filename = os.path.join(globals.dirs.resource,data_filename)
-        with open(data_filename, "r") as f:
+        with open(globals.pyinst.path(data_filename), "r") as f:
             for line in f:
                 subimage_name, image_name, x, y, w, h = line.strip().split(":")
                 # print image_name,image_filename

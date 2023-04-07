@@ -373,12 +373,12 @@ class GameMap(object):
 class GameView(ui.RootElement):
     def __init__(self):
         self.atlas = globals.atlas = drawing.texture.TextureAtlas("tiles_atlas_0.png", "tiles_atlas.txt")
-        self.map = GameMap("level1.txt")
+        self.map = GameMap(globals.pyinst.path("level1.txt"))
         self.map.world_size = self.map.size * globals.tile_dimensions
         self.viewpos = Viewpos(Point(0, 0))
         self.player_direction = Point(0, 0)
         self.game_over = False
-        pygame.mixer.music.load("music.ogg")
+        pygame.mixer.music.load(globals.pyinst.path("music.ogg"))
         self.music_playing = False
         self.light = drawing.Quad(globals.light_quads)
         self.light.SetVertices(Point(0, 0), globals.screen_abs - Point(0, 0), 0)
